@@ -1,0 +1,22 @@
+{
+    "preset": "ts-jest",
+    "rootDir": "../../",
+    "roots": ["<rootDir>/src", "<rootDir>/test/integration"],
+
+    "moduleFileExtensions": ["js", "json", "ts"],
+    "moduleDirectories": ["node_modules", "src"],
+
+    "testMatch": ["**/*.spec.ts"],
+    "transform": {
+        "^.+\\.(ts|js)$": "ts-jest"
+    },
+
+    "moduleNameMapper": {
+        "^src/(.*)$": "<rootDir>/src/$1"
+    },
+
+    "testEnvironment": "node",
+
+    "setupFiles": ["<rootDir>/test/jest.setup.ts"],
+    "setupFilesAfterEnv": ["<rootDir>/test/integration/init.setup.ts"]
+}
