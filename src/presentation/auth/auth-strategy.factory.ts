@@ -1,64 +1,99 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { AuthStrategy, ActiveAppStrategy } from './auth.types';
 import { DiscordStrategy } from './discord.strategy';
-import { AuthStrategy, PassportStrategy } from './types';
 
 @Injectable()
 export class AuthStrategyFactory {
-    private readonly _strategyMap: Map<string, PassportStrategy> = new Map();
-    private _activeStrategyName: AuthStrategy;
+    private readonly _logger: Logger = new Logger(AuthStrategyFactory.name);
+    private readonly _strategyMap: Map<string, ActiveAppStrategy> = new Map();
+    private _activeStrategyName: AuthStrategy | undefined;
 
     constructor(
         private readonly _configService: ConfigService,
         private readonly _discordStrategy: DiscordStrategy,
     ) {
         this._strategyMap.set(AuthStrategy.DISCORD, this._discordStrategy);
+        this._logger.log('AuthStrategyFactory initialized.');
     }
 
     /**
-     * Gets the name of the currently configured authentication strategy.
+     * Provides the active authentication strategy name.
      *
-     * @returns The active strategy name (ex: 'discord') or null if none is configured or valid.
+     * This wrapper exposes the validated strategy name for external use.
+     *
+     * @returns The active strategy name.
      */
     public getActiveStrategyName(): AuthStrategy {
-        if (this._activeStrategyName !== null) {
+        return this._getActiveStrategyName();
+    }
+
+    /**
+     * Returns the instance of the active authentication strategy.
+     *
+     * Retrieves the strategy corresponding to the validated configuration so that the
+     * correct Passport strategy is used for authentication.
+     *
+     * @returns The active authentication strategy instance.
+     */
+    public getActiveStrategyInstance(): ActiveAppStrategy {
+        const name: AuthStrategy = this._getActiveStrategyName();
+        const strategy: ActiveAppStrategy | undefined = this._strategyMap.get(name);
+
+        if (!strategy) {
+            const errorMsg: string = `Strategy instance for '${name}' not found in map. Check constructor injection and map population.`;
+            this._logger.error(errorMsg);
+            throw new Error(errorMsg);
+        }
+        return strategy;
+    }
+
+    /**
+     * Determines and caches the active authentication strategy name based on configuration.
+     *
+     * Reads the 'AUTH_STRATEGY' from the configuration, validates it against known strategies,
+     * and falls back to a default if necessary.
+     *
+     * @returns The active authentication strategy name.
+     */
+    private _getActiveStrategyName(): AuthStrategy {
+        if (this._activeStrategyName !== undefined) {
             return this._activeStrategyName;
         }
 
-        const strategyName = this._configService.get<string>('AUTH_STRATEGY')?.toLowerCase();
+        const strategyName: string | undefined = this._configService
+            .get<string>('AUTH_STRATEGY')
+            ?.toLowerCase();
 
         if (strategyName === undefined) {
-            this._activeStrategyName = AuthStrategy.DISCORD;
+            this._logger.warn('AUTH_STRATEGY not defined in config, defaulting to discord.');
 
+            this._activeStrategyName = AuthStrategy.DISCORD;
             return this._activeStrategyName;
         }
 
         if (!this._isValidAuthStrategy(strategyName)) {
-            throw new Error(`Configured AUTH_STRATEGY '${strategyName}' is not a valid strategy.`);
+            const errorMsg: string = `Configured AUTH_STRATEGY '${strategyName}' is not valid.`;
+            this._logger.error(errorMsg);
+            throw new Error(errorMsg);
         }
 
-        this._activeStrategyName = strategyName;
+        this._logger.log(`Active authentication strategy set to: ${strategyName}`);
 
-        return strategyName;
+        this._activeStrategyName = strategyName;
+        return this._activeStrategyName;
     }
 
     /**
-     * Gets the instance of the currently configured authentication strategy.
+     * Validates that the provided value matches a known authentication strategy.
      *
-     * @returns The active strategy instance or null.
+     * This check is essential to ensure that configuration errors are caught early,
+     * preventing the use of an unsupported or misspelled strategy name.
+     *
+     * @param authStrategy - The value to validate.
+     * @returns True if the value is a recognized strategy.
      */
-    public getActiveStrategyInstance(): PassportStrategy {
-        const name = this.getActiveStrategyName();
-        const strategy = this._strategyMap.get(name);
-
-        if (!strategy) {
-            throw new Error(`Strategy ${name} not found in strategy map`);
-        }
-
-        return strategy;
-    }
-
     private _isValidAuthStrategy(authStrategy: unknown): authStrategy is AuthStrategy {
-        return Object.values(AuthStrategy).some((strategy) => strategy === authStrategy);
+        return Object.values(AuthStrategy).some((strategyEnumValue) => strategyEnumValue === authStrategy);
     }
 }

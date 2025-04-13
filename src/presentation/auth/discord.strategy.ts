@@ -1,38 +1,85 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import Strategy, { Profile } from 'passport-discord';
-import { NodeEnvironment } from './types';
+import { AuthService } from '../../config/services/auth.service';
+import { UserProps } from 'src/domain/entities/user/user.types';
+import { UrlConfigService } from 'src/config/services/url.service';
+import { Done } from './auth.types';
 
+/**
+ * Implements Discord OAuth 2.0 authentication as a Passport strategy.
+ *
+ * This strategy is registered under the name 'discord' and is not invoked directly.
+ * Instead, NestJS’s Passport integration automatically consumes it via AuthGuard('discord')
+ * during the authentication process.
+ *
+ * The strategy ensures that critical Discord OAuth credentials are provided and uses the
+ * callback mechanism to integrate Discord-provided user profiles with your application's user management.
+ */
 @Injectable()
 export class DiscordStrategy extends PassportStrategy(Strategy, 'discord') {
+    private readonly _logger: Logger = new Logger(DiscordStrategy.name);
+
     constructor(
         private readonly _authService: AuthService,
         private readonly _configService: ConfigService,
+        _urlService: UrlConfigService,
     ) {
         super({
             clientID: _configService.get<string>('DISCORD_CLIENT_ID') ?? '',
             clientSecret: _configService.get<string>('DISCORD_CLIENT_SECRET') ?? '',
-            callbackURL: DiscordStrategy._getCallbackUrl(_configService),
-            scope: ['identify'],
+            callbackURL: `${_urlService.apiUrl}/auth/discord/callback`,
+            scope: ['identify', 'email'],
         });
+
+        if (
+            this._configService.get<string>('DISCORD_CLIENT_ID') === undefined ||
+            this._configService.get<string>('DISCORD_CLIENT_SECRET') === undefined
+        ) {
+            this._logger.error('Discord clientID or clientSecret not configured!');
+            throw new Error('Discord OAuth credentials missing.');
+        }
     }
 
-    public async validate(_accessToken: string, _refreshToken: string, profile: Profile): User {
-        const user = await this._authService.validateOrCreateUserFromDiscordProfile(profile);
+    /**
+     * Processes the OAuth callback by transforming the Discord profile into an application user.
+     *
+     * Invoked automatically during the authentication process by Passport via the AuthGuard.
+     * It delegates to AuthService to validate or create a user from the provided Discord profile.
+     * Any errors during this process are caught and forwarded as an UnauthorizedException.
+     *
+     * @param _accessToken   The token provided by Discord to access user data.
+     * @param _refreshToken  The token used to obtain a fresh access token if needed.
+     * @param profile        The Discord profile data received post-authentication.
+     * @param done           Callback to complete the Passport flow, passing either an error or the validated user.
+     */
+    public async validate(
+        _accessToken: string,
+        _refreshToken: string,
+        profile: Profile,
+        done: Done,
+    ): Promise<void> {
+        this._logger.debug(`Validating Discord profile: ${profile.username}#${profile.discriminator}`);
 
-        return user;
-    }
+        try {
+            const userProps: UserProps = {
+                provider: profile.provider,
+                id: profile.id,
+                username: profile.username,
+                avatar: profile.avatar,
+                displayName: profile.displayName,
+            };
 
-    private static _getCallbackUrl(configService: ConfigService): string {
-        const environment = configService.get<NodeEnvironment>('NODE_ENV');
-        const productionUrl = configService.get<string>('PRODUCTION_URL');
+            const user = await this._authService.validateOrCreateUser(userProps);
 
-        const returnUrls = {
-            prod: `${productionUrl}/api/auth/discord/return`,
-            dev: 'http://localhost:3000/api/auth/discord/return',
-        };
-
-        return environment === NodeEnvironment.PROD ? returnUrls.prod : returnUrls.dev;
+            this._logger.debug(`Validation successful for user: ${user.id}`);
+            return done(null, user);
+        } catch (error: unknown) {
+            this._logger.error(
+                `Exception during validation for ${profile.id}: ${error instanceof Error ? error.message : String(error)}`,
+            );
+            return done(new UnauthorizedException('An unknown error occurred while validating user.'), null);
+        }
     }
 }

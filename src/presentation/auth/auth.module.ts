@@ -1,26 +1,38 @@
-import { Module, Type } from '@nestjs/common';
+import { Module, Type, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AuthGuard, IAuthGuard, PassportModule } from '@nestjs/passport';
-import { DiscordStrategy } from './discord.strategy';
+import { AuthGuard as NestAuthGuard, IAuthGuard, PassportModule } from '@nestjs/passport';
 import { AuthStrategyFactory } from './auth-strategy.factory';
 import { AUTH_PROVIDER_TOKEN } from './auth.constants';
+import { AuthService } from '../../config/services/auth.service';
+import { UrlConfigService } from 'src/config/services/url.service';
+import { SessionSerializer } from './session.serializer';
+import { DiscordStrategy } from './discord.strategy';
+
+/**
+ * Provides a dynamic authentication guard.
+ *
+ * By querying the AuthStrategyFactory for the active strategy name and returning the corresponding NestJS AuthGuard,
+ * this provider makes it simple to switch authentication strategies via configuration without modifying dependent code.
+ */
+const AuthGuardProvider: Provider = {
+    provide: AUTH_PROVIDER_TOKEN,
+    useFactory: (authStrategyFactory: AuthStrategyFactory): Type<IAuthGuard> => {
+        const activeStrategyName: string = authStrategyFactory['_getActiveStrategyName']();
+        const GuardClass: Type<IAuthGuard> = NestAuthGuard(activeStrategyName);
+        return GuardClass;
+    },
+    inject: [AuthStrategyFactory],
+};
 
 @Module({
-    imports: [PassportModule, ConfigModule],
+    imports: [PassportModule.register({ session: true }), ConfigModule],
     providers: [
         AuthService,
+        UrlConfigService,
+        SessionSerializer,
         DiscordStrategy,
         AuthStrategyFactory,
-        {
-            provide: AUTH_PROVIDER_TOKEN,
-            useFactory: (authStrategyFactory: AuthStrategyFactory): Type<IAuthGuard> => {
-                const activeStrategyName = authStrategyFactory.getActiveStrategyName();
-                const GuardClass = AuthGuard(activeStrategyName);
-
-                return GuardClass;
-            },
-            inject: [AuthStrategyFactory],
-        },
+        AuthGuardProvider,
     ],
     controllers: [],
     exports: [AuthService, AuthStrategyFactory, AUTH_PROVIDER_TOKEN],
