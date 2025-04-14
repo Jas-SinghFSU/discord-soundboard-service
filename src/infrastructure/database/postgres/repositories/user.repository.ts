@@ -24,6 +24,7 @@ export class PostgresUserRepository implements UserRepository {
 
     public async create(user: User): Promise<User> {
         const postgresUserAttributes = this._mapper.toRecord(user);
+
         const insertedUser = await this._db
             .insertInto(this._table)
             .values(postgresUserAttributes)
@@ -34,25 +35,31 @@ export class PostgresUserRepository implements UserRepository {
             throw new Error('User insertion failed.');
         }
 
-        const userEntity = User.fromData(insertedUser);
-
-        return userEntity;
+        return user;
     }
 
-    public async findOneByUsername(username: string): Promise<User> {
+    public async findOneByUsername(username: string): Promise<User | undefined> {
         const query = this._db.selectFrom(this._table).where('username', '=', username).selectAll();
 
-        const foundUser = await query.executeTakeFirstOrThrow();
+        const foundUser = await query.executeTakeFirst();
+
+        if (foundUser === undefined) {
+            return;
+        }
 
         const userEntity = this._mapper.toEntity(foundUser);
 
         return userEntity;
     }
 
-    public async findOneById(userId: string): Promise<User> {
+    public async findOneById(userId: string): Promise<User | undefined> {
         const query = this._db.selectFrom(this._table).where('id', '=', userId).selectAll();
 
-        const foundUser = await query.executeTakeFirstOrThrow();
+        const foundUser = await query.executeTakeFirst();
+
+        if (foundUser === undefined) {
+            return;
+        }
 
         const userEntity = this._mapper.toEntity(foundUser);
 

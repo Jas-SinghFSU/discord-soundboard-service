@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Kysely, PostgresDialect, sql } from 'kysely';
 import { Pool } from 'pg';
+import { PostgresDb } from './models';
 
 @Injectable()
 export class PostgresConnection {
@@ -13,7 +15,9 @@ export class PostgresConnection {
         if (PostgresConnection._pool) {
             return;
         }
+
         await this._setupPool();
+        await this._createTables();
     }
 
     /**
@@ -57,6 +61,27 @@ export class PostgresConnection {
                 }`,
             );
         }
+    }
+    private async _createTables(): Promise<void> {
+        const kysely = new Kysely<PostgresDb>({
+            dialect: new PostgresDialect({
+                pool: this.pool,
+            }),
+        });
+
+        await kysely.schema
+            .createTable('users')
+            .addColumn('id', 'text', (col) => col.primaryKey())
+            .addColumn('username', 'text', (col) => col.notNull())
+            .addColumn('display_name', 'text', (col) => col.notNull())
+            .addColumn('avatar', 'text')
+            .addColumn('provider', 'text', (col) => col.notNull())
+            .addColumn('entry_audio', 'text')
+            .addColumn('volume', 'integer', (col) => col.notNull().defaultTo(100))
+            .addColumn('play_on_entry', 'boolean', (col) => col.notNull().defaultTo(false))
+            .addColumn('favorites', sql`text[]`, (col) => col.notNull().defaultTo(sql`'{}'`))
+            .ifNotExists()
+            .execute();
     }
 
     /**

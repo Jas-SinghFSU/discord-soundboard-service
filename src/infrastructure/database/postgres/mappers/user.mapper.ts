@@ -15,12 +15,12 @@ export class PostgresUserMapper implements Mapper<User, PostgresUser> {
         const userRecord: PostgresUser = {
             id: userEntity.id,
             username: userEntity.username,
-            displayName: userEntity.displayName,
+            display_name: userEntity.displayName,
             avatar: userEntity.avatar,
             provider: userEntity.provider,
-            entryAudio: userEntity.audioPreferences.entryAudio,
+            entry_audio: userEntity.audioPreferences.entryAudio,
             volume: userEntity.audioPreferences.volume,
-            playOnEntry: userEntity.audioPreferences.playOnEntry,
+            play_on_entry: userEntity.audioPreferences.playOnEntry,
             favorites: userEntity.audioPreferences.favorites,
         };
 
@@ -31,13 +31,13 @@ export class PostgresUserMapper implements Mapper<User, PostgresUser> {
         const userAttributes: UserAttributes = {
             id: userRecord.id,
             username: userRecord.username,
-            displayName: userRecord.displayName,
+            displayName: userRecord.display_name,
             avatar: userRecord.avatar,
             provider: userRecord.provider,
             audioPreferences: {
-                entryAudio: userRecord.entryAudio,
+                entryAudio: userRecord.entry_audio,
                 volume: userRecord.volume,
-                playOnEntry: userRecord.playOnEntry,
+                playOnEntry: userRecord.play_on_entry,
                 favorites: userRecord.favorites,
             },
         };

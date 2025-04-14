@@ -1,5 +1,4 @@
-import { generateUuid } from 'src/shared/utils/uuid.utils';
-import { NewUserEntityProps, UpdateUserProps, UserAudioPreferences, UserAttributes } from './user.types';
+import { UpdateUserProps, UserAudioPreferences, UserAttributes } from './user.types';
 
 export class User {
     private readonly _id: string;
@@ -37,10 +36,8 @@ export class User {
      * @param userProps The properties for initializing the new user.
      * @returns A new User instance.
      */
-    public static create(userProps: NewUserEntityProps): User {
-        const newId = generateUuid();
+    public static create(userProps: UserAttributes): User {
         const newUserProps: UserAttributes = {
-            id: newId,
             ...userProps,
         };
 

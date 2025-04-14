@@ -1,11 +1,11 @@
 export class PostgresUser {
     public id: string;
     public username: string;
-    public displayName: string;
+    public display_name: string;
     public avatar: string | null;
     public provider: string;
-    public entryAudio: string | null;
+    public entry_audio: string | null;
     public volume: number;
-    public playOnEntry: boolean;
+    public play_on_entry: boolean;
     public favorites: string[];
 }

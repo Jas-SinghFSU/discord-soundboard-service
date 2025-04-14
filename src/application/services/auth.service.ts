@@ -29,18 +29,21 @@ export class AuthService {
      * @returns A validated or newly created user.
      */
     public async validateOrCreateUser(profile: UserAttributes): Promise<User> {
-        this._logger.debug(`Validating or creating user for provider ID: ${profile.provider}:${profile.id}`);
+        this._logger.debug(
+            `Validating or creating user for provider Discord ID: ${profile.provider}:${profile.id}`,
+        );
 
         try {
             let user = await this._getUserInteractor.execute(profile.id);
 
             if (user !== undefined) {
+                this._logger.debug('User found. Updating user.');
                 user = await this._maybeUpdateUser(user, profile);
                 return user;
             }
 
             this._logger.debug('User not found. Creating new user.');
-            const newUser: User = await this._createUserInteractor.execute(profile);
+            const newUser = await this._createUserInteractor.execute(profile);
 
             this._logger.debug(`New user created: ${newUser.id}`);
             return newUser;

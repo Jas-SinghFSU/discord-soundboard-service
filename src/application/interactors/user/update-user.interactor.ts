@@ -32,7 +32,7 @@ export class UpdateUserInteractor implements Interactor<UpdateUserInteractorProp
     }
 
     private async _getUserById(userId: string): Promise<User> {
-        const foundUser = this._userRepository.findOneById(userId);
+        const foundUser = await this._userRepository.findOneById(userId);
 
         if (foundUser === undefined) {
             throw new Error(`Failed to update user. User with ID '${userId}' not found.`);

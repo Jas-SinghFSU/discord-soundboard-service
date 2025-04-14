@@ -65,11 +65,11 @@ export class DiscordStrategy extends PassportStrategy(Strategy, AuthStrategy.DIS
 
         try {
             const userProps: UserAttributes = {
-                provider: profile.provider,
                 id: profile.id,
+                provider: profile.provider,
                 username: profile.username,
                 avatar: profile.avatar,
-                displayName: profile.displayName,
+                displayName: profile.global_name ?? profile.username,
             };
 
             const user = await this._authService.validateOrCreateUser(userProps);

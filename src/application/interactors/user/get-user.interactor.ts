@@ -5,14 +5,14 @@ import { UserRepository } from 'src/domain/ports/repositories/user-repository.in
 import { RepositoryTokens } from 'src/infrastructure/database/database.constants';
 
 @Injectable()
-export class GetUserInteractor implements Interactor<string, User> {
+export class GetUserInteractor implements Interactor<string, User | undefined> {
     constructor(@Inject(RepositoryTokens.USER) private readonly _userRepository: UserRepository) {}
 
-    public async execute(userId: string): Promise<User> {
+    public async execute(userId: string): Promise<User | undefined> {
         const foundUser = await this._userRepository.findOneById(userId);
 
         if (foundUser === undefined) {
-            throw new Error(`A user with an ID '${userId}' was not found.`);
+            return;
         }
 
         return foundUser;

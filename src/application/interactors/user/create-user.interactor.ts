@@ -12,7 +12,7 @@ export class CreateUserInteractor implements Interactor<UserAttributes, User> {
     public async execute(userProps: UserAttributes): Promise<User> {
         await this._ensureNoUserConflict(userProps);
 
-        const userEntity = User.fromData(userProps);
+        const userEntity = User.create(userProps);
 
         const newUserEntity = await this._userRepository.create(userEntity);
 

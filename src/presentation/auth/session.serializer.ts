@@ -53,7 +53,9 @@ export class SessionSerializer extends PassportSerializer {
 
             if (user === undefined) {
                 this._logger.warn(`Deserialize: User not found for ID: ${userId}`);
+                throw new Error(`Failed to deserialize user with with id '${userId}'. User not found.`);
             }
+
             done(null, user);
         } catch (error: unknown) {
             this._logger.error(
