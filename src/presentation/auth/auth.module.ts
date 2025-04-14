@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthGuard as NestAuthGuard, IAuthGuard, PassportModule } from '@nestjs/passport';
 import { AuthStrategyFactory } from './auth-strategy.factory';
 import { AUTH_PROVIDER_TOKEN } from './auth.constants';
-import { AuthService } from '../../config/services/auth.service';
+import { AuthService } from '../../application/services/auth.service';
 import { UrlConfigService } from 'src/config/services/url.service';
 import { SessionSerializer } from './session.serializer';
 import { DiscordStrategy } from './discord.strategy';
@@ -34,7 +34,6 @@ const AuthGuardProvider: Provider = {
         AuthStrategyFactory,
         AuthGuardProvider,
     ],
-    controllers: [],
     exports: [AuthService, AuthStrategyFactory, AUTH_PROVIDER_TOKEN],
 })
 export class AuthModule {}

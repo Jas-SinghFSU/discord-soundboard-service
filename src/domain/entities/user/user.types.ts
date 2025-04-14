@@ -1,4 +1,4 @@
-export interface UserProps {
+export interface UserAttributes {
     provider: string;
     id: string;
     username: string;
@@ -7,8 +7,9 @@ export interface UserProps {
 
     audioPreferences?: UserAudioPreferences;
 }
+export interface UpdateUserProps extends Partial<Omit<UserAttributes, 'id' | 'provider'>> {}
 
-export interface NewUserProps extends Omit<UserProps, 'id'> {}
+export interface NewUserEntityProps extends Omit<UserAttributes, 'id'> {}
 
 export interface UserAudioPreferences {
     entryAudio: string | null;

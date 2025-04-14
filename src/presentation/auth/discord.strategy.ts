@@ -2,8 +2,8 @@ import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import Strategy, { Profile } from 'passport-discord';
-import { AuthService } from '../../config/services/auth.service';
-import { UserProps } from 'src/domain/entities/user/user.types';
+import { AuthService } from '../../application/services/auth.service';
+import { UserAttributes } from 'src/domain/entities/user/user.types';
 import { UrlConfigService } from 'src/config/services/url.service';
 import { Done } from './auth.types';
 
@@ -63,7 +63,7 @@ export class DiscordStrategy extends PassportStrategy(Strategy, 'discord') {
         this._logger.debug(`Validating Discord profile: ${profile.username}#${profile.discriminator}`);
 
         try {
-            const userProps: UserProps = {
+            const userProps: UserAttributes = {
                 provider: profile.provider,
                 id: profile.id,
                 username: profile.username,

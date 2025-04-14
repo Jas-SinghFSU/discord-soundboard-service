@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PassportSerializer } from '@nestjs/passport';
 import { User } from 'src/domain/entities/user/user.entity';
 import { Done } from './auth.types';
+import { GetUserInteractor } from 'src/application/interactors/user';
 
 /**
  * Manages how user session data is handled for Passport.
@@ -48,7 +49,7 @@ export class SessionSerializer extends PassportSerializer {
         this._logger.debug(`Deserializing user ID: ${userId}`);
 
         try {
-            const user = await this._getUserInteractor.execute({ id: userId });
+            const user = await this._getUserInteractor.execute(userId);
 
             if (user === undefined) {
                 this._logger.warn(`Deserialize: User not found for ID: ${userId}`);

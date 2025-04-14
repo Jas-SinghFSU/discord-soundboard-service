@@ -1,5 +1,5 @@
 import { generateUuid } from 'src/shared/utils/uuid.utils';
-import { NewUserProps, UserAudioPreferences, UserProps } from './user.types';
+import { NewUserEntityProps, UpdateUserProps, UserAudioPreferences, UserAttributes } from './user.types';
 
 export class User {
     private readonly _id: string;
@@ -9,7 +9,7 @@ export class User {
     private _avatar: string | null;
     private _audioPreferences: UserAudioPreferences;
 
-    private constructor(userProps: UserProps) {
+    private constructor(userProps: UserAttributes) {
         this._id = userProps.id;
         this._username = userProps.username;
         this._displayName = userProps.displayName;
@@ -37,9 +37,9 @@ export class User {
      * @param userProps The properties for initializing the new user.
      * @returns A new User instance.
      */
-    public static create(userProps: NewUserProps): User {
+    public static create(userProps: NewUserEntityProps): User {
         const newId = generateUuid();
-        const newUserProps: UserProps = {
+        const newUserProps: UserAttributes = {
             id: newId,
             ...userProps,
         };
@@ -55,8 +55,15 @@ export class User {
      * @param userProps The properties of the user from storage.
      * @returns A User instance representing the stored user.
      */
-    public static fromData(userProps: UserProps): User {
+    public static fromData(userProps: UserAttributes): User {
         return new User(userProps);
+    }
+
+    public update(props: UpdateUserProps): void {
+        if (props.username !== undefined) this._username = props.username;
+        if (props.displayName !== undefined) this._displayName = props.displayName;
+        if (props.avatar !== undefined) this._avatar = props.avatar;
+        if (props.audioPreferences !== undefined) this._audioPreferences = props.audioPreferences;
     }
 
     public get id(): string {
@@ -81,21 +88,5 @@ export class User {
 
     public get audioPreferences(): UserAudioPreferences {
         return this._audioPreferences;
-    }
-
-    public set username(username: string) {
-        this._username = username;
-    }
-
-    public set displayName(displayName: string) {
-        this._displayName = displayName;
-    }
-
-    public set avatar(avatar: string) {
-        this._avatar = avatar;
-    }
-
-    public set audioPreferences(audioPreferences: UserAudioPreferences) {
-        this._audioPreferences = audioPreferences;
     }
 }
