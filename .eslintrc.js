@@ -25,7 +25,7 @@ module.exports = {
             {
                 accessibility: 'explicit',
                 overrides: {
-                    constructors: 'no-public', // Allows constructors to be without "public"
+                    constructors: 'no-public',
                 },
             },
         ],

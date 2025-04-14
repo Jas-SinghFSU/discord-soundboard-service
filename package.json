@@ -15,10 +15,10 @@
         "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --config .eslintrc.js",
         "lint:fix": "eslint \"{src,apps,libs,test}/**/*.ts\" --config .eslintrc.js --fix",
         "test": "npm run test:unit",
-        "test:watch": "jest --watch --config ./test/unit/jest.unit.config.js",
-        "test:cov": "jest --coverage --config ./test/unit/jest.unit.config.js",
+        "test:watch": "jest --watch --config ./test/unit/jest.unit.config.ts",
+        "test:cov": "jest --coverage --config ./test/unit/jest.unit.config.ts",
         "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-        "test:unit": "jest --config ./test/unit/jest.unit.config.js",
+        "test:unit": "jest --config ./test/unit/jest.unit.config.ts",
         "test:integration": "jest --config ./test/integration/jest.integration.config.json",
         "test:e2e": "jest --config ./test/e2e/jest.e2e.config.json"
     },
