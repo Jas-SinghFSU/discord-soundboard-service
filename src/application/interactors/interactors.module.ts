@@ -3,7 +3,7 @@ import { CreateUserInteractor, GetUserInteractor, UpdateUserInteractor } from '.
 import { DatabaseModule } from 'src/infrastructure/database/database.module';
 import { RepositoryTokens } from 'src/infrastructure/database/database.constants';
 import { DatabaseFactory } from 'src/infrastructure/database/database.factory';
-import { UserRepository } from 'src/domain/ports/repositories/user-repository.interface';
+import { UserRepository } from 'src/domain/ports/repositories';
 import { Repository } from 'src/infrastructure/database/types/factory.types';
 
 const userRepositoryProvider = {

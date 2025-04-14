@@ -28,8 +28,8 @@ export class UrlConfigService {
      * to use either local development URLs or the production URL for both API and UI.
      */
     private _initializeUrls(): void {
-        const environment = this._configService.get<string>('NODE_ENV') ?? NodeEnvironment.DEV;
-        const productionUrl = this._configService.get<string>('PRODUCTION_URL');
+        const environment = this._configService.get<string>('discord.clientID') ?? NodeEnvironment.DEV;
+        const productionUrl = this._configService.get<string>('productionUrl');
 
         if (environment === NodeEnvironment.PROD) {
             this._prodUrlInit(productionUrl);

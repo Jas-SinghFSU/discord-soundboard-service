@@ -13,7 +13,7 @@ async function bootstrap(): Promise<void> {
     await setupApp(app);
 
     const configService = app.get(ConfigService);
-    const port = configService.get<number>('PORT') ?? 3000;
+    const port = configService.get<number>('port') ?? 3000;
 
     await app.listen(port);
     logger.log(`🚀 Application is running on: http://localhost:${port}/api`);

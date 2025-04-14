@@ -1,8 +1,8 @@
 import { Kysely } from 'kysely';
 import { Pool } from 'pg';
 import { User } from 'src/domain/entities/user/user.entity';
-import { UserRepository } from 'src/domain/ports/repositories/user-repository.interface';
-import { PostgresDb } from '../models/postgres.model';
+import { UserRepository } from 'src/domain/ports/repositories';
+import { PostgresDb } from '../models';
 import { createDb } from '../postgres.provider';
 import { PostgresTables } from '../postgres.types';
 import { Mapper } from '../../types/mapper.interface';

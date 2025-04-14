@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Interactor } from '../interactor.interface';
 import { User } from 'src/domain/entities/user/user.entity';
 import { UpdateUserInteractorProps } from './user-interactor.types';
-import { UserRepository } from 'src/domain/ports/repositories/user-repository.interface';
+import { UserRepository } from 'src/domain/ports/repositories';
 import { RepositoryTokens } from 'src/infrastructure/database/database.constants';
 
 @Injectable()

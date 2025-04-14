@@ -25,11 +25,11 @@ export class PostgresConnection {
      */
     private async _setupPool(): Promise<void> {
         try {
-            const host = this._getConfigurationVariable('PG_HOST');
-            const port = parseInt(this._getConfigurationVariable('PG_PORT'), 10);
-            const database = this._getConfigurationVariable('PG_DATABASE');
-            const user = this._getConfigurationVariable('PG_USER');
-            const password = this._getConfigurationVariable('PG_PASSWORD');
+            const host = this._getConfigurationVariable('database.host');
+            const port = parseInt(this._getConfigurationVariable('database.port'), 10);
+            const database = this._getConfigurationVariable('database.name');
+            const user = this._getConfigurationVariable('database.user');
+            const password = this._getConfigurationVariable('database.password');
 
             this._logger.debug('Initializing Postgres connection pool...', {
                 methodName: this._setupPool.name,

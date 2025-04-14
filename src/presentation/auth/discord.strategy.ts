@@ -27,16 +27,16 @@ export class DiscordStrategy extends PassportStrategy(Strategy, AuthStrategy.DIS
         _urlService: UrlConfigService,
     ) {
         super({
-            clientID: _configService.get<string>('DISCORD_CLIENT_ID') ?? '',
-            clientSecret: _configService.get<string>('DISCORD_CLIENT_SECRET') ?? '',
+            clientID: _configService.get<string>('discord.clientID') ?? '',
+            clientSecret: _configService.get<string>('discord.clientSecret') ?? '',
             callbackURL: `${_urlService.apiUrl}/auth/discord/callback`,
             scope: ['identify', 'email'],
             passReqToCallback: false,
         });
 
         if (
-            this._configService.get<string>('DISCORD_CLIENT_ID') === undefined ||
-            this._configService.get<string>('DISCORD_CLIENT_SECRET') === undefined
+            this._configService.get<string>('discord.clientID') === undefined ||
+            this._configService.get<string>('discord.clientSecret') === undefined
         ) {
             this._logger.error('Discord clientID or clientSecret not configured!');
             throw new Error('Discord OAuth credentials missing.');

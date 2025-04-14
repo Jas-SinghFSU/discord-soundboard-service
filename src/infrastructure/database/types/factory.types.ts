@@ -1,4 +1,4 @@
-import { UserRepository } from 'src/domain/ports/repositories/user-repository.interface';
+import { UserRepository } from 'src/domain/ports/repositories';
 
 export enum Repository {
     USER = 'user',

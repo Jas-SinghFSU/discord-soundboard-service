@@ -8,7 +8,6 @@ import {
     RepositoryFactory,
 } from './types/factory.types';
 import { PostgresRepositoryFactory } from './postgres/postgres.factory';
-import { ConfigKeys } from 'src/config/config.types';
 
 @Injectable()
 export class DatabaseFactory {
@@ -33,7 +32,7 @@ export class DatabaseFactory {
     private _getProviderFactory(): RepositoryFactory {
         if (this._repositoryFactory !== undefined) return this._repositoryFactory;
 
-        const dbProviderConfig = this._configService.get<string>(ConfigKeys.DATABASE);
+        const dbProviderConfig = this._configService.get<string>('database.type');
 
         this._logger.debug(`Initializing database provider based on config (${dbProviderConfig})`, {
             methodName: this._getProviderFactory.name,
@@ -42,7 +41,7 @@ export class DatabaseFactory {
         let provider: RepositoryFactory;
 
         if (dbProviderConfig !== undefined && !DatabaseFactory.isValidDbHost(dbProviderConfig)) {
-            throw new Error(`Invalid ${ConfigKeys.DATABASE} environment variable.`);
+            throw new Error("Invalid 'database' environment variable.");
         }
 
         if (dbProviderConfig === undefined) {
