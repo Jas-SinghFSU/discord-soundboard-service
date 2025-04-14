@@ -32,7 +32,7 @@ export class UrlConfigService {
         const productionUrl = this._configService.get<string>('productionUrl');
 
         if (environment === NodeEnvironment.PROD) {
-            this._prodUrlInit(productionUrl);
+            return this._prodUrlInit(productionUrl);
         }
 
         this._uiUrl = this._devUiUrl;

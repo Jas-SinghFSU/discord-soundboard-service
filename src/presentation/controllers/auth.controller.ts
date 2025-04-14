@@ -1,6 +1,6 @@
 import { Controller, Get, UseGuards, Req, Res, Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { UrlConfigService } from 'src/config/services/url.service';
+import { UrlConfigService } from 'src/application/services/url.service';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthStrategy } from '../auth/auth.types';
 

@@ -26,6 +26,7 @@ module.exports = {
          *              DON'T COLLECT              *
          *******************************************/
         '!src/main.{ts,js}',
+        '!src/app.setup.{ts,js}',
 
         // Nothing to test in modules
         '!src/**/*.module.{ts,js}',
@@ -40,6 +41,7 @@ module.exports = {
 
         // Ignore types (no behavior)
         '!src/**/*.enums.{ts,js}',
+        '!src/**/*.model.{ts,js}',
         '!src/**/*.types.{ts,js}',
         '!src/**/*.constants.{ts,js}',
         '!src/**/*.tokens.{ts,js}',

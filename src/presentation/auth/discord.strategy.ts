@@ -4,7 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, Profile } from 'passport-discord';
 import { AuthService } from '../../application/services/auth.service';
 import { UserAttributes } from 'src/domain/entities/user/user.types';
-import { UrlConfigService } from 'src/config/services/url.service';
+import { UrlConfigService } from 'src/application/services/url.service';
 import { AuthStrategy, Done } from './auth.types';
 
 /**

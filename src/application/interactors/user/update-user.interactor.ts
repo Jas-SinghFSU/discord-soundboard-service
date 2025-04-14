@@ -12,7 +12,7 @@ export class UpdateUserInteractor implements Interactor<UpdateUserInteractorProp
     public async execute(userProps: UpdateUserInteractorProps): Promise<User> {
         const foundUser = await this._getUserById(userProps.id);
 
-        await this._ensureNoUserConflict(foundUser);
+        await this._ensureNoUsernameConflict(userProps.userData.username, userProps.id);
 
         foundUser.update(userProps.userData);
 
@@ -21,13 +21,15 @@ export class UpdateUserInteractor implements Interactor<UpdateUserInteractorProp
         return newUserEntity;
     }
 
-    private async _ensureNoUserConflict(user: User): Promise<void> {
-        const userResponse = await this._userRepository.findOneByUsername(user.username);
+    private async _ensureNoUsernameConflict(username: string | undefined, userId: string): Promise<void> {
+        if (username === undefined) {
+            return;
+        }
 
-        if (userResponse !== undefined) {
-            throw new Error(
-                `Failed to update user. A user with the username '${user.username}' already exists.`,
-            );
+        const userResponse = await this._userRepository.findOneByUsername(username);
+
+        if (userResponse !== undefined && userId !== userResponse.id) {
+            throw new Error(`Failed to update user. A user with the username '${username}' already exists.`);
         }
     }
 
