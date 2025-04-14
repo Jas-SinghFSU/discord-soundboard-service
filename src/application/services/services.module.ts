@@ -7,10 +7,10 @@ const authServiceProvider = {
     provide: AuthService,
     useFactory: (
         createUserInteractor: CreateUserInteractor,
-        getUserInteractor: GetUserInteractor,
         updateUserInteractor: UpdateUserInteractor,
+        getUserInteractor: GetUserInteractor,
     ): AuthService => new AuthService(createUserInteractor, updateUserInteractor, getUserInteractor),
-    inject: [CreateUserInteractor, GetUserInteractor, UpdateUserInteractor],
+    inject: [CreateUserInteractor, UpdateUserInteractor, GetUserInteractor],
 };
 
 @Module({
@@ -18,4 +18,4 @@ const authServiceProvider = {
     providers: [authServiceProvider],
     exports: [AuthService],
 })
-export class ServicesModules {}
+export class ServicesModule {}

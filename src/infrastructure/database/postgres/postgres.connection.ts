@@ -52,7 +52,9 @@ export class PostgresConnection {
             PostgresConnection._pool = pool;
         } catch (error) {
             throw new Error(
-                `Failed to initialize Postgres connection: ${error instanceof Error ? error.message : String(error)}`,
+                `Failed to initialize Postgres connection: ${
+                    error instanceof Error ? error.message : String(error)
+                }`,
             );
         }
     }

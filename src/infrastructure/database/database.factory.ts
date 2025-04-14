@@ -34,7 +34,6 @@ export class DatabaseFactory {
         if (this._repositoryFactory !== undefined) return this._repositoryFactory;
 
         const dbProviderConfig = this._configService.get<string>(ConfigKeys.DATABASE);
-        console.log(dbProviderConfig);
 
         this._logger.debug(`Initializing database provider based on config (${dbProviderConfig})`, {
             methodName: this._getProviderFactory.name,

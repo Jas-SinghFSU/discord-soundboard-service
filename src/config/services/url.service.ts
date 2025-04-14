@@ -5,7 +5,7 @@ import { NodeEnvironment } from '../../presentation/auth/auth.types';
 @Injectable()
 export class UrlConfigService {
     private readonly _devUiUrl: string = 'http://localhost:3333';
-    private readonly _devApiUrl: string = 'http://localhost:3000';
+    private readonly _devApiUrl: string = 'http://localhost:3000/api';
     private _uiUrl: string;
     private _apiUrl: string;
 
@@ -53,6 +53,6 @@ export class UrlConfigService {
         }
 
         this._apiUrl = productionUrl;
-        this._uiUrl = productionUrl;
+        this._uiUrl = `${productionUrl}/api`;
     }
 }

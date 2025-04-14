@@ -1,11 +1,11 @@
 import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import Strategy, { Profile } from 'passport-discord';
+import { Strategy, Profile } from 'passport-discord';
 import { AuthService } from '../../application/services/auth.service';
 import { UserAttributes } from 'src/domain/entities/user/user.types';
 import { UrlConfigService } from 'src/config/services/url.service';
-import { Done } from './auth.types';
+import { AuthStrategy, Done } from './auth.types';
 
 /**
  * Implements Discord OAuth 2.0 authentication as a Passport strategy.
@@ -18,7 +18,7 @@ import { Done } from './auth.types';
  * callback mechanism to integrate Discord-provided user profiles with your application's user management.
  */
 @Injectable()
-export class DiscordStrategy extends PassportStrategy(Strategy, 'discord') {
+export class DiscordStrategy extends PassportStrategy(Strategy, AuthStrategy.DISCORD) {
     private readonly _logger: Logger = new Logger(DiscordStrategy.name);
 
     constructor(
@@ -31,6 +31,7 @@ export class DiscordStrategy extends PassportStrategy(Strategy, 'discord') {
             clientSecret: _configService.get<string>('DISCORD_CLIENT_SECRET') ?? '',
             callbackURL: `${_urlService.apiUrl}/auth/discord/callback`,
             scope: ['identify', 'email'],
+            passReqToCallback: false,
         });
 
         if (

@@ -3,10 +3,11 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthGuard as NestAuthGuard, IAuthGuard, PassportModule } from '@nestjs/passport';
 import { AuthStrategyFactory } from './auth-strategy.factory';
 import { AUTH_PROVIDER_TOKEN } from './auth.constants';
-import { AuthService } from '../../application/services/auth.service';
 import { UrlConfigService } from 'src/config/services/url.service';
 import { SessionSerializer } from './session.serializer';
 import { DiscordStrategy } from './discord.strategy';
+import { ServicesModule } from 'src/application/services/services.module';
+import { InteractorsModule } from 'src/application/interactors/interactors.module';
 
 /**
  * Provides a dynamic authentication guard.
@@ -25,15 +26,8 @@ const AuthGuardProvider: Provider = {
 };
 
 @Module({
-    imports: [PassportModule.register({ session: true }), ConfigModule],
-    providers: [
-        AuthService,
-        UrlConfigService,
-        SessionSerializer,
-        DiscordStrategy,
-        AuthStrategyFactory,
-        AuthGuardProvider,
-    ],
-    exports: [AuthService, AuthStrategyFactory, AUTH_PROVIDER_TOKEN],
+    imports: [PassportModule.register({ session: true }), ConfigModule, ServicesModule, InteractorsModule],
+    providers: [UrlConfigService, SessionSerializer, DiscordStrategy, AuthStrategyFactory, AuthGuardProvider],
+    exports: [AuthStrategyFactory, AUTH_PROVIDER_TOKEN],
 })
 export class AuthModule {}

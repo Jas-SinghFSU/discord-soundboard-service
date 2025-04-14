@@ -8,8 +8,9 @@ import { Repository } from 'src/infrastructure/database/types/factory.types';
 
 const userRepositoryProvider = {
     provide: RepositoryTokens.USER,
-    useFactory: (databaseFactory: DatabaseFactory): UserRepository =>
-        databaseFactory.getRepository(Repository.USER),
+    useFactory: (databaseFactory: DatabaseFactory): UserRepository => {
+        return databaseFactory.getRepository(Repository.USER);
+    },
     inject: [DatabaseFactory],
 };
 
