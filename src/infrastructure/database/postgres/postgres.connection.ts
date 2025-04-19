@@ -55,11 +55,7 @@ export class PostgresConnection {
 
             PostgresConnection._pool = pool;
         } catch (error) {
-            throw new Error(
-                `Failed to initialize Postgres connection: ${
-                    error instanceof Error ? error.message : String(error)
-                }`,
-            );
+            throw new Error(`Failed to initialize Postgres connection: ${error}`);
         }
     }
     private async _createTables(): Promise<void> {

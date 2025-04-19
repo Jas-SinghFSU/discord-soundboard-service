@@ -67,12 +67,6 @@
     },
     "overrides": [
         {
-            "files": ["test/unit/**/*.ts"],
-            "rules": {
-                "@typescript-eslint/no-explicit-any": "off"
-            }
-        },
-        {
             "files": ["**/*.dto.ts"],
             "rules": {
                 "@typescript-eslint/explicit-member-accessibility": "off"

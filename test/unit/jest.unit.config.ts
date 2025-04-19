@@ -45,6 +45,7 @@ module.exports = {
         '!src/**/*.types.{ts,js}',
         '!src/**/*.constants.{ts,js}',
         '!src/**/*.tokens.{ts,js}',
+        '!src/**/*.strategy.{ts,js}',
     ],
     testPathIgnorePatterns: ['.*\\.module\\.(ts|js)$', '.*\\.d\\.(ts|js)$'],
 
