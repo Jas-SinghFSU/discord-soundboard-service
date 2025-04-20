@@ -48,7 +48,7 @@ export class AuthController {
      */
     @Get('discord/callback')
     @UseGuards(AuthGuard(AuthStrategy.DISCORD))
-    public discordCallback(@Req() req: Request, @Res() res: Response): void {
+    public discordCallback(@Req() _req: Request, @Res() res: Response): void {
         this._logger.log('Discord callback endpoint hit.');
         res.redirect(`${this._uiUrl}/soundboard`);
     }
@@ -64,6 +64,7 @@ export class AuthController {
         const username: string | undefined = req.user
             ? (req.user as { username: string }).username
             : undefined;
+
         this._logger.log(`Logout attempt for user: ${username ?? 'N/A'}`);
 
         req.logout((err: Error | undefined) => {

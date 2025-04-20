@@ -1,7 +1,8 @@
-import { INestApplication, Logger, ValidationPipe } from '@nestjs/common';
+import { INestApplication, Logger } from '@nestjs/common';
 import * as session from 'express-session';
 import * as passport from 'passport';
 import { ConfigService } from '@nestjs/config';
+import { initializeValidationPipe } from './config/validation.pipe';
 
 export async function setupApp(app: INestApplication): Promise<void> {
     const configService = app.get(ConfigService);
@@ -37,7 +38,8 @@ export async function setupApp(app: INestApplication): Promise<void> {
     app.use(passport.initialize());
     app.use(passport.session());
 
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    initializeValidationPipe(app);
+
     app.enableCors({
         origin: uiUrl ?? true,
         credentials: true,

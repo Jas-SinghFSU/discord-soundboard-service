@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { RepositoryFactory, Repository, InstanceMap } from '../types/factory.types';
 import { PostgresConnection } from './postgres.connection';
 import { PostgresUserRepository } from './repositories/';
-import { PostgresUserMapper } from './mappers';
+import { PostgresUserMapper } from '../mappers';
 
 @Injectable()
 export class PostgresRepositoryFactory implements RepositoryFactory {

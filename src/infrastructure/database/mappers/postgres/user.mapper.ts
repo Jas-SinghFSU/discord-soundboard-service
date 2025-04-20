@@ -1,8 +1,8 @@
-import { UserAttributes } from 'src/domain/entities/user/user.types';
+import { CreateUserProps } from 'src/domain/entities/user/user.types';
 import { User } from 'src/domain/entities/user/user.entity';
 import { Mapper } from '../../types/mapper.interface';
-import { PostgresUser } from '../models';
-import { getValidatedDatabaseRecord } from '../database-model.validator';
+import { getValidatedDatabaseRecord } from '../../postgres/database-model.validator';
+import { PostgresUser } from '../../postgres/models';
 
 export class PostgresUserMapper implements Mapper<User, PostgresUser> {
     public async toEntity(document: Record<string, unknown>): Promise<User> {
@@ -27,8 +27,8 @@ export class PostgresUserMapper implements Mapper<User, PostgresUser> {
         return userRecord;
     }
 
-    private _toUserAttributes(userRecord: PostgresUser): UserAttributes {
-        const userAttributes: UserAttributes = {
+    private _toUserAttributes(userRecord: PostgresUser): CreateUserProps {
+        const userAttributes: CreateUserProps = {
             id: userRecord.id,
             username: userRecord.username,
             displayName: userRecord.display_name,

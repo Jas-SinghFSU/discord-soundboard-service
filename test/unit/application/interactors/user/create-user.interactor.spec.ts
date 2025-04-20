@@ -2,14 +2,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CreateUserInteractor } from 'src/application/interactors/user/create-user.interactor';
 import { UserRepository } from 'src/domain/ports/repositories';
 import { User } from 'src/domain/entities/user/user.entity';
-import { UserAttributes } from 'src/domain/entities/user/user.types';
+import { CreateUserProps } from 'src/domain/entities/user/user.types';
 import { RepositoryTokens } from 'src/infrastructure/database/database.constants';
 
 describe('CreateUserInteractor', () => {
     let interactor: CreateUserInteractor;
     let userRepository: jest.Mocked<UserRepository>;
 
-    const mockUserAttributes: UserAttributes = {
+    const mockUserAttributes: CreateUserProps = {
         id: 'test-id',
         username: 'testuser',
         displayName: 'Test User',

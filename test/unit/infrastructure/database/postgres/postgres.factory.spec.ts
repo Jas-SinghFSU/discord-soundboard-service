@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Pool } from 'pg';
-import { PostgresUserMapper } from 'src/infrastructure/database/postgres/mappers';
+import { PostgresUserMapper } from 'src/infrastructure/database/mappers';
 import { PostgresConnection } from 'src/infrastructure/database/postgres/postgres.connection';
 import { PostgresRepositoryFactory } from 'src/infrastructure/database/postgres/postgres.factory';
 import { PostgresUserRepository } from 'src/infrastructure/database/postgres/repositories';

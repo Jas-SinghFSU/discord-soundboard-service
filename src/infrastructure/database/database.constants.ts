@@ -6,4 +6,5 @@ export const RepositoryTokens = {
 
 export const PostgresMapperTokens = {
     USER: Symbol('postgres_user_mapper'),
+    AUDIO_COMMAND: Symbol('postgres_audio_cmd_mapper'),
 } as const;

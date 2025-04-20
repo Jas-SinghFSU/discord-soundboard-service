@@ -1,8 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Kysely, PostgresDialect, sql } from 'kysely';
+import { Kysely, PostgresDialect } from 'kysely';
 import { Pool } from 'pg';
 import { PostgresDb } from './models';
+import { createUsersTable } from './migrations/001/create-users.migration';
+import { createAudioCommandsTable } from './migrations/001/create-audio-commands.migration';
+import { createAudioDataTable } from './migrations/001/create-audio-data.migration';
 
 @Injectable()
 export class PostgresConnection {
@@ -58,6 +61,10 @@ export class PostgresConnection {
             throw new Error(`Failed to initialize Postgres connection: ${error}`);
         }
     }
+
+    /**
+     * Ensures that all tables in the database are created
+     */
     private async _createTables(): Promise<void> {
         const kysely = new Kysely<PostgresDb>({
             dialect: new PostgresDialect({
@@ -65,19 +72,9 @@ export class PostgresConnection {
             }),
         });
 
-        await kysely.schema
-            .createTable('users')
-            .addColumn('id', 'text', (col) => col.primaryKey())
-            .addColumn('username', 'text', (col) => col.notNull())
-            .addColumn('display_name', 'text', (col) => col.notNull())
-            .addColumn('avatar', 'text')
-            .addColumn('provider', 'text', (col) => col.notNull())
-            .addColumn('entry_audio', 'text')
-            .addColumn('volume', 'integer', (col) => col.notNull().defaultTo(100))
-            .addColumn('play_on_entry', 'boolean', (col) => col.notNull().defaultTo(false))
-            .addColumn('favorites', sql`text[]`, (col) => col.notNull().defaultTo(sql`'{}'`))
-            .ifNotExists()
-            .execute();
+        await createUsersTable(kysely);
+        await createAudioCommandsTable(kysely);
+        await createAudioDataTable(kysely);
     }
 
     /**

@@ -1,9 +1,9 @@
 import { Test } from '@nestjs/testing';
 import { User } from 'src/domain/entities/user/user.entity';
-import { UserAttributes, UserAudioPreferences } from 'src/domain/entities/user/user.types';
+import { CreateUserProps, UserAudioPreferences } from 'src/domain/entities/user/user.types';
 
 describe('User Entity', () => {
-    const mockUserAttributes: UserAttributes = {
+    const mockUserAttributes: CreateUserProps = {
         id: 'user-123',
         provider: 'discord',
         username: 'testuser',

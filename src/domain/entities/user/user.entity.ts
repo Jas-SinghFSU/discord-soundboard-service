@@ -1,4 +1,4 @@
-import { UpdateUserProps, UserAudioPreferences, UserAttributes } from './user.types';
+import { UpdateUserProps, UserAudioPreferences, CreateUserProps } from './user.types';
 
 export class User {
     private readonly _id: string;
@@ -8,7 +8,7 @@ export class User {
     private _avatar: string | null;
     private _audioPreferences: UserAudioPreferences;
 
-    private constructor(userProps: UserAttributes) {
+    private constructor(userProps: CreateUserProps) {
         this._id = userProps.id;
         this._username = userProps.username;
         this._displayName = userProps.displayName;
@@ -36,12 +36,8 @@ export class User {
      * @param userProps The properties for initializing the new user.
      * @returns A new User instance.
      */
-    public static create(userProps: UserAttributes): User {
-        const newUserProps: UserAttributes = {
-            ...userProps,
-        };
-
-        return new User(newUserProps);
+    public static create(userProps: CreateUserProps): User {
+        return new User(userProps);
     }
 
     /**
@@ -52,15 +48,26 @@ export class User {
      * @param userProps The properties of the user from storage.
      * @returns A User instance representing the stored user.
      */
-    public static fromData(userProps: UserAttributes): User {
+    public static fromData(userProps: CreateUserProps): User {
         return new User(userProps);
     }
 
+    /**
+     * Updates the user's mutable properties.
+     *
+     * Used to modify user attributes like username, display name, avatar, and audio preferences.
+     * Only updates properties that are explicitly provided in the update props.
+     *
+     * @param props The properties to update on the user.
+     */
     public update(props: UpdateUserProps): void {
-        if (props.username !== undefined) this._username = props.username;
-        if (props.displayName !== undefined) this._displayName = props.displayName;
-        if (props.avatar !== undefined) this._avatar = props.avatar;
-        if (props.audioPreferences !== undefined) this._audioPreferences = props.audioPreferences;
+        this._username = props.username ?? this._username;
+        this._displayName = props.displayName ?? this._displayName;
+        this._audioPreferences = props.audioPreferences ?? this._audioPreferences;
+
+        if (props.avatar !== undefined) {
+            this._avatar = props.avatar;
+        }
     }
 
     public get id(): string {

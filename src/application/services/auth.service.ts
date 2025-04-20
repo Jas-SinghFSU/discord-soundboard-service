@@ -6,7 +6,7 @@ import {
 } from 'src/application/interactors/user';
 import { UpdateUserInteractorProps } from 'src/application/interactors/user/user-interactor.types';
 import { User } from 'src/domain/entities/user/user.entity';
-import { UserAttributes } from 'src/domain/entities/user/user.types';
+import { CreateUserProps } from 'src/domain/entities/user/user.types';
 
 @Injectable()
 export class AuthService {
@@ -28,7 +28,7 @@ export class AuthService {
      * @param profile  The user profile data received from an external authentication provider.
      * @returns A validated or newly created user.
      */
-    public async validateOrCreateUser(profile: UserAttributes): Promise<User> {
+    public async validateOrCreateUser(profile: CreateUserProps): Promise<User> {
         this._logger.debug(
             `Validating or creating user for provider Discord ID: ${profile.provider}:${profile.id}`,
         );
@@ -48,9 +48,10 @@ export class AuthService {
             this._logger.debug(`New user created: ${newUser.id}`);
             return newUser;
         } catch (error: unknown) {
-            this._logger.error(
-                `Error in validateOrCreateUser for ${profile.id}: ${error instanceof Error ? error.message : String(error)}`,
-            );
+            const internalErrorMsg = error instanceof Error ? error.message : String(error);
+
+            this._logger.error(`Error in validateOrCreateUser for ${profile.id}: ${internalErrorMsg}`);
+
             throw new InternalServerErrorException('An unknown error occured while validating user.');
         }
     }
@@ -66,9 +67,9 @@ export class AuthService {
      * @param profile  The external profile data containing potentially updated user properties.
      * @returns The updated user record if any changes were applied, otherwise the original user record.
      */
-    private async _maybeUpdateUser(user: User, profile: UserAttributes): Promise<User> {
+    private async _maybeUpdateUser(user: User, profile: CreateUserProps): Promise<User> {
         this._logger.debug(`User found: ${user.id}. Checking for updates.`);
-        const updates: Partial<UserAttributes> = {};
+        const updates: Partial<CreateUserProps> = {};
 
         if (user.username !== profile.username) {
             updates.username = profile.username;

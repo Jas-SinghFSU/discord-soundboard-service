@@ -1,7 +1,7 @@
-import { PostgresUserMapper } from 'src/infrastructure/database/postgres/mappers';
+import { PostgresUserMapper } from 'src/infrastructure/database/mappers';
 import { User } from 'src/domain/entities/user/user.entity';
 import { PostgresUser } from 'src/infrastructure/database/postgres/models';
-import { UserAttributes } from 'src/domain/entities/user/user.types';
+import { CreateUserProps } from 'src/domain/entities/user/user.types';
 import { getValidatedDatabaseRecord } from 'src/infrastructure/database/postgres/database-model.validator';
 
 jest.mock('src/infrastructure/database/postgres/database-model.validator');
@@ -57,7 +57,7 @@ describe('PostgresUserMapper', () => {
 
     describe('toRecord', () => {
         it('should convert a User entity to a database record', () => {
-            const userAttributes: UserAttributes = {
+            const userAttributes: CreateUserProps = {
                 id: '123',
                 username: 'testuser',
                 displayName: 'Test User',

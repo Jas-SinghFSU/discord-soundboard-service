@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { InternalServerErrorException } from '@nestjs/common';
-import { UserAttributes } from 'src/domain/entities/user/user.types';
+import { CreateUserProps } from 'src/domain/entities/user/user.types';
 import { User } from 'src/domain/entities/user/user.entity';
 import { AuthService } from 'src/application/services/auth.service';
 import { UpdateUserInteractorProps } from 'src/application/interactors/user/user-interactor.types';
@@ -14,7 +14,7 @@ type MockInteractor<T = any, R = any> = {
     execute: jest.Mock<Promise<R>, [T]>;
 };
 
-const createMockUser = (props: UserAttributes): User => {
+const createMockUser = (props: CreateUserProps): User => {
     return {
         id: props.id,
         provider: props.provider,
@@ -33,13 +33,13 @@ const createMockUser = (props: UserAttributes): User => {
 
 describe('AuthService', () => {
     let service: AuthService;
-    let createUserInteractor: MockInteractor<UserAttributes, User>;
+    let createUserInteractor: MockInteractor<CreateUserProps, User>;
     let updateUserInteractor: MockInteractor<UpdateUserInteractorProps, User>;
     let getUserInteractor: MockInteractor<string, User | null | undefined>;
 
-    let mockProfile: UserAttributes;
+    let mockProfile: CreateUserProps;
     let mockExistingUser: User;
-    let mockExistingUserProps: UserAttributes;
+    let mockExistingUserProps: CreateUserProps;
     let mockUpdatedUser: User;
     let mockNewUser: User;
 
@@ -131,7 +131,7 @@ describe('AuthService', () => {
         });
 
         it('should only include changed fields in the update payload', async () => {
-            const profileWithOnlyUsernameChange: UserAttributes = {
+            const profileWithOnlyUsernameChange: CreateUserProps = {
                 ...mockExistingUserProps,
                 username: 'NewUsername',
             };
