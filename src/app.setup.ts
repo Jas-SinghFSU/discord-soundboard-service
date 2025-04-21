@@ -32,6 +32,7 @@ export async function setupApp(app: INestApplication): Promise<void> {
                 maxAge: maxSessionAgeInDays(7),
                 httpOnly: true,
                 sameSite: 'lax',
+                //TODO: Change to true for production (check env)
                 secure: false,
             },
         }),
