@@ -30,6 +30,9 @@ export async function setupApp(app: INestApplication): Promise<void> {
             saveUninitialized: false,
             cookie: {
                 maxAge: maxSessionAgeInDays(7),
+                httpOnly: true,
+                sameSite: 'lax',
+                secure: false,
             },
         }),
     );

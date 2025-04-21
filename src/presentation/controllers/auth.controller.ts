@@ -22,6 +22,9 @@ export class AuthController {
      */
     @Get('status')
     public checkAuthStatus(@Req() req: Request): Record<string, unknown> {
+        this._logger.debug(`Session ID: ${req.sessionID}`);
+        this._logger.debug(`Session: ${JSON.stringify(req.session)}`);
+        this._logger.debug(`Is Authenticated: ${req.isAuthenticated()}`);
         if (req.isAuthenticated()) {
             this._logger.debug('Auth status check: User is authenticated.');
             return { loggedIn: true, user: req.user };

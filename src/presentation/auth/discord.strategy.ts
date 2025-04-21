@@ -30,7 +30,7 @@ export class DiscordStrategy extends PassportStrategy(Strategy, AuthStrategy.DIS
             clientID: _configService.get<string>('discord.clientID') ?? '',
             clientSecret: _configService.get<string>('discord.clientSecret') ?? '',
             callbackURL: `${_urlService.apiUrl}/auth/discord/callback`,
-            scope: ['identify', 'email'],
+            scope: ['identify'],
             passReqToCallback: false,
         });
 
@@ -62,6 +62,7 @@ export class DiscordStrategy extends PassportStrategy(Strategy, AuthStrategy.DIS
         done: Done,
     ): Promise<void> {
         this._logger.debug(`Validating Discord profile: ${profile.username}#${profile.discriminator}`);
+        this._logger.debug(`Received profile: ${JSON.stringify(profile)}`);
 
         try {
             const userProps: CreateUserProps = {
@@ -72,9 +73,13 @@ export class DiscordStrategy extends PassportStrategy(Strategy, AuthStrategy.DIS
                 displayName: profile.global_name ?? profile.username,
             };
 
+            this._logger.debug(`Constructed userProps: ${JSON.stringify(userProps)}`);
+
             const user = await this._authService.validateOrCreateUser(userProps);
 
             this._logger.debug(`Validation successful for user: ${user.id}`);
+            this._logger.debug(`User object: ${JSON.stringify(user)}`);
+
             return done(null, user);
         } catch (error: unknown) {
             this._logger.error(
