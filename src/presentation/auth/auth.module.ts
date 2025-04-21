@@ -26,7 +26,12 @@ const AuthGuardProvider: Provider = {
 };
 
 @Module({
-    imports: [PassportModule.register({ session: true }), ConfigModule, ServicesModule, InteractorsModule],
+    imports: [
+        PassportModule.register({ session: true, property: 'user' }),
+        ConfigModule,
+        ServicesModule,
+        InteractorsModule,
+    ],
     providers: [UrlConfigService, SessionSerializer, DiscordStrategy, AuthStrategyFactory, AuthGuardProvider],
     exports: [AuthStrategyFactory, AUTH_PROVIDER_TOKEN],
 })

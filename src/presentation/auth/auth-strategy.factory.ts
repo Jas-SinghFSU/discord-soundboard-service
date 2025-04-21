@@ -62,7 +62,7 @@ export class AuthStrategyFactory {
         }
 
         const strategyName: string | undefined = this._configService
-            .get<string>('discord.authStrategy')
+            .get<string>('authStrategy')
             ?.toLowerCase();
 
         if (strategyName === undefined) {

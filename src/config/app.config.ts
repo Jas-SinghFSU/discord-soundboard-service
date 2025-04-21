@@ -3,7 +3,8 @@ import { AuthStrategy } from 'src/presentation/auth/auth.types';
 export default (): Record<string, unknown> => ({
     port: parseInt(process.env.PORT ?? '3000', 10),
     productionUrl: process.env.PRODUCTION_URL,
-    AuthStrategy: process.env.AUTH_STRATEGY ?? AuthStrategy.DISCORD,
+    authStrategy: process.env.AUTH_STRATEGY ?? AuthStrategy.DISCORD,
+    uiUrl: process.env.UI_URL ?? 'http://localhost:3333',
 
     discord: {
         clientID: process.env.DISCORD_CLIENT_ID,

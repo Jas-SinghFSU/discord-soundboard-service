@@ -9,7 +9,7 @@ export async function setupApp(app: INestApplication): Promise<void> {
     const logger = new Logger('AppSetup');
 
     const sessionSecret = configService.get<string>('session.secret');
-    const uiUrl = configService.get<string>('UI_URL');
+    const uiUrl = configService.get<string>('uiUrl');
 
     const maxSessionAgeInDays = (days: number): number => 1000 * 60 * 60 * 24 * days;
 
@@ -30,7 +30,6 @@ export async function setupApp(app: INestApplication): Promise<void> {
             saveUninitialized: false,
             cookie: {
                 maxAge: maxSessionAgeInDays(7),
-                httpOnly: true,
             },
         }),
     );

@@ -5,6 +5,7 @@ import { CreateUserInteractor, GetUserInteractor, UpdateUserInteractor } from '.
 import { AudioService } from './audio.service';
 import { GetAudioInteractor } from '../interactors/audio/get-audio.interactor';
 import { DatabaseModule } from 'src/infrastructure/database/database.module';
+import { CreateAudioInteractor } from '../interactors/audio/create-audio.interactor';
 
 const AUTH_SERVICE_PROVIDER: Provider = {
     provide: AuthService,
@@ -18,9 +19,11 @@ const AUTH_SERVICE_PROVIDER: Provider = {
 
 const AUDIO_SERVICE_PROVIDER: Provider = {
     provide: AudioService,
-    useFactory: (getAudioInteractor: GetAudioInteractor): AudioService =>
-        new AudioService(getAudioInteractor),
-    inject: [GetAudioInteractor],
+    useFactory: (
+        getAudioInteractor: GetAudioInteractor,
+        createAudioInteractor: CreateAudioInteractor,
+    ): AudioService => new AudioService(getAudioInteractor, createAudioInteractor),
+    inject: [GetAudioInteractor, CreateAudioInteractor],
 };
 
 @Module({
