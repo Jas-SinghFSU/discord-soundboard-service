@@ -10,7 +10,7 @@ import {
     UpdateUserInteractor,
 } from 'src/application/interactors/user';
 
-type MockInteractor<T = any, R = any> = {
+type MockInteractor<T, R> = {
     execute: jest.Mock<Promise<R>, [T]>;
 };
 

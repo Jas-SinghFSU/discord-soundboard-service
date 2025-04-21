@@ -1,8 +1,8 @@
 import { CreateUserProps } from 'src/domain/entities/user/user.types';
 import { User } from 'src/domain/entities/user/user.entity';
 import { Mapper } from '../../types/mapper.interface';
-import { getValidatedDatabaseRecord } from '../../postgres/database-model.validator';
-import { PostgresUser } from '../../postgres/models';
+import { getValidatedDatabaseRecord } from '../../database-model.validator';
+import { PostgresUser } from '../../postgres/tables';
 
 export class PostgresUserMapper implements Mapper<User, PostgresUser> {
     public async toEntity(document: Record<string, unknown>): Promise<User> {

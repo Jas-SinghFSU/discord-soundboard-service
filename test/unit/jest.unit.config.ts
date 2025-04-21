@@ -39,6 +39,9 @@ module.exports = {
         // Ignore Configs (no business logic)
         '!src/**/*.config.{ts,js}',
 
+        // Addapter connection logic should be integration tested
+        '!src/**/*.connection.{ts,js}',
+
         // Ignore types (no behavior)
         '!src/**/*.enums.{ts,js}',
         '!src/**/*.model.{ts,js}',

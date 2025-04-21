@@ -3,7 +3,7 @@ import { validate } from 'class-validator';
 import {
     getValidatedDatabaseRecord,
     isValidDatabaseRecord,
-} from '../../../../../src/infrastructure/database/postgres/database-model.validator';
+} from '../../../../../src/infrastructure/database/database-model.validator';
 import { IsString, IsNotEmpty, IsNumber } from 'class-validator';
 
 jest.mock('class-transformer');

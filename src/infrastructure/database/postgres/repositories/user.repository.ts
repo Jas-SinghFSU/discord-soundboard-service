@@ -1,31 +1,28 @@
-import { Kysely } from 'kysely';
-import { Pool } from 'pg';
 import { User } from 'src/domain/entities/user/user.entity';
 import { UserRepository } from 'src/domain/ports/repositories';
-import { PostgresDb } from '../models';
-import { createDb } from '../postgres.provider';
+import { Transaction as DomainTransaction } from 'src/domain/ports/transactions/transaction.interface';
 import { PostgresTables } from '../postgres.types';
 import { Mapper } from '../../types/mapper.interface';
-import { PostgresUser } from '../models';
+import { PostgresDb, PostgresUser } from '../tables';
 import { Inject } from '@nestjs/common';
 import { PostgresMapperTokens } from '../../database.constants';
+import { Kysely, Transaction as KyselyTransaction } from 'kysely';
+import { PostgresTransaction } from '../postgres.types';
 
 export class PostgresUserRepository implements UserRepository {
-    private readonly _db: Kysely<PostgresDb>;
     private readonly _table = PostgresTables.USERS;
 
     constructor(
-        pool: Pool,
+        private readonly _db: Kysely<PostgresDb>,
         @Inject(PostgresMapperTokens.USER)
         private readonly _mapper: Mapper<User, PostgresUser>,
-    ) {
-        this._db = createDb(pool);
-    }
+    ) {}
 
-    public async create(user: User): Promise<User> {
+    public async create(user: User, transaction?: DomainTransaction): Promise<User> {
+        const executor = this._getExecutor(transaction);
         const postgresUserAttributes = this._mapper.toRecord(user);
 
-        const insertedUser = await this._db
+        const insertedUser = await executor
             .insertInto(this._table)
             .values(postgresUserAttributes)
             .returningAll()
@@ -38,8 +35,13 @@ export class PostgresUserRepository implements UserRepository {
         return user;
     }
 
-    public async findOneByUsername(username: string): Promise<User | undefined> {
-        const query = this._db.selectFrom(this._table).where('username', '=', username).selectAll();
+    public async findOneByUsername(
+        username: string,
+        transaction?: DomainTransaction,
+    ): Promise<User | undefined> {
+        const executor = this._getExecutor(transaction);
+
+        const query = executor.selectFrom(this._table).where('username', '=', username).selectAll();
 
         const foundUser = await query.executeTakeFirst();
 
@@ -48,12 +50,13 @@ export class PostgresUserRepository implements UserRepository {
         }
 
         const userEntity = this._mapper.toEntity(foundUser);
-
         return userEntity;
     }
 
-    public async findOneById(userId: string): Promise<User | undefined> {
-        const query = this._db.selectFrom(this._table).where('id', '=', userId).selectAll();
+    public async findOneById(userId: string, transaction?: DomainTransaction): Promise<User | undefined> {
+        const executor = this._getExecutor(transaction);
+
+        const query = executor.selectFrom(this._table).where('id', '=', userId).selectAll();
 
         const foundUser = await query.executeTakeFirst();
 
@@ -62,7 +65,30 @@ export class PostgresUserRepository implements UserRepository {
         }
 
         const userEntity = this._mapper.toEntity(foundUser);
-
         return userEntity;
+    }
+
+    public async update(user: User, transaction?: DomainTransaction): Promise<User> {
+        const executor = this._getExecutor(transaction);
+        const postgresUserAttributes = this._mapper.toRecord(user);
+
+        const updatedUser = await executor
+            .updateTable(this._table)
+            .set(postgresUserAttributes)
+            .where('id', '=', user.id)
+            .returningAll()
+            .executeTakeFirst();
+
+        if (updatedUser === undefined) {
+            throw new Error('User update failed.');
+        }
+
+        return user;
+    }
+
+    private _getExecutor(
+        transaction?: DomainTransaction,
+    ): Kysely<PostgresDb> | KyselyTransaction<PostgresDb> {
+        return transaction ? (transaction as PostgresTransaction).transaction : this._db;
     }
 }

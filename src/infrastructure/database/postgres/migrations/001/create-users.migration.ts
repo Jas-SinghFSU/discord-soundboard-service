@@ -1,5 +1,5 @@
 import { Kysely, sql } from 'kysely';
-import { PostgresDb } from '../../models';
+import { PostgresDb } from '../../tables';
 import { PostgresTables } from '../../postgres.types';
 
 export async function createUsersTable(kysely: Kysely<PostgresDb>): Promise<void> {

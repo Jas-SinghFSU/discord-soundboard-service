@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { DatabaseHosts } from '../types/factory.types';
+import { DatabaseProviders } from '../types/factory.types';
 import { PostgresConnection } from './postgres.connection';
 
 @Module({
@@ -11,9 +11,9 @@ import { PostgresConnection } from './postgres.connection';
             useFactory: async (configService: ConfigService): Promise<PostgresConnection> => {
                 const pgConnection = new PostgresConnection(configService);
                 const configuredDatabase =
-                    configService.get<string>('database.type') ?? DatabaseHosts.POSTGRES;
+                    configService.get<string>('database.type') ?? DatabaseProviders.POSTGRES;
 
-                if (configuredDatabase === DatabaseHosts.POSTGRES) {
+                if (configuredDatabase === DatabaseProviders.POSTGRES) {
                     await pgConnection.initialize();
                 }
 

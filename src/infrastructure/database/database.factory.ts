@@ -1,13 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-    DatabaseHosts,
-    InstanceMap,
-    ProviderMap,
-    Repository,
-    RepositoryFactory,
-} from './types/factory.types';
+import { DatabaseProviders, ProviderMap, RepositoryFactory } from './types/factory.types';
 import { PostgresRepositoryFactory } from './postgres/postgres.factory';
+import { UserRepository } from 'src/domain/ports/repositories';
+import { AudioRepository } from 'src/domain/ports/repositories/audio-repository.interface';
 
 @Injectable()
 export class DatabaseFactory {
@@ -20,13 +16,18 @@ export class DatabaseFactory {
         private readonly _postgresRepositoryFactory: PostgresRepositoryFactory,
     ) {
         this._providerMap = {
-            [DatabaseHosts.POSTGRES]: this._postgresRepositoryFactory,
+            [DatabaseProviders.POSTGRES]: this._postgresRepositoryFactory,
         };
     }
 
-    public getRepository<R extends Repository>(repo: R): InstanceMap[R] {
+    public getUserRepository(): UserRepository {
         const providerFactory = this._getProviderFactory();
-        return providerFactory.getRepo(repo);
+        return providerFactory.getUserRepository();
+    }
+
+    public getAudioRepository(): AudioRepository {
+        const providerFactory = this._getProviderFactory();
+        return providerFactory.getAudioRepository();
     }
 
     private _getProviderFactory(): RepositoryFactory {
@@ -48,7 +49,7 @@ export class DatabaseFactory {
             this._logger.warn(`DB Provider not found (${dbProviderConfig}). Defaulting to in-memory.`, {
                 methodName: this._getProviderFactory.name,
             });
-            provider = this._providerMap[DatabaseHosts.POSTGRES];
+            provider = this._providerMap[DatabaseProviders.POSTGRES];
         } else {
             provider = this._providerMap[dbProviderConfig];
         }
@@ -58,7 +59,7 @@ export class DatabaseFactory {
         return provider;
     }
 
-    public static isValidDbHost(dbHost: string): dbHost is DatabaseHosts {
-        return Object.values(DatabaseHosts).some((host) => dbHost === host);
+    public static isValidDbHost(dbHost: string): dbHost is DatabaseProviders {
+        return Object.values(DatabaseProviders).some((host) => dbHost === host);
     }
 }

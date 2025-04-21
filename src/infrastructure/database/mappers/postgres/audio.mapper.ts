@@ -1,6 +1,6 @@
 import { Audio } from 'src/domain/entities/audio/audio.entity';
-import { PostgresAudioCommand } from '../../postgres/models/postgres-audio-command.model';
-import { getValidatedDatabaseRecord } from '../../postgres/database-model.validator';
+import { PostgresAudioCommand } from '../../postgres/tables/postgres-audio-command.table';
+import { getValidatedDatabaseRecord } from '../../database-model.validator';
 import { Mapper } from '../../types/mapper.interface';
 import { AudioData } from 'src/domain/entities/audio/audio.types';
 

@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { PostgresDb } from '../../models';
+import { PostgresDb } from '../../tables';
 import { PostgresTables } from '../../postgres.types';
 
 export async function createAudioDataTable(kysely: Kysely<PostgresDb>): Promise<void> {

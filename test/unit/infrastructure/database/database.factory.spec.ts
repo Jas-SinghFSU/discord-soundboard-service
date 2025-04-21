@@ -1,123 +1,115 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
-import { DatabaseFactory } from 'src/infrastructure/database/database.factory';
-import { DatabaseHosts, Repository } from 'src/infrastructure/database/types/factory.types';
-import { PostgresRepositoryFactory } from 'src/infrastructure/database/postgres/postgres.factory';
 import { UserRepository } from 'src/domain/ports/repositories';
+import { AudioRepository } from 'src/domain/ports/repositories/audio-repository.interface';
+import { DatabaseFactory } from 'src/infrastructure/database/database.factory';
+import { PostgresRepositoryFactory } from 'src/infrastructure/database/postgres/postgres.factory';
+import { DatabaseProviders } from 'src/infrastructure/database/types/factory.types';
 
 describe('DatabaseFactory', () => {
     let databaseFactory: DatabaseFactory;
-    let configService: ConfigService;
-    let postgresRepositoryFactory: PostgresRepositoryFactory;
+    let mockConfigService: Partial<ConfigService>;
+    let mockPostgresRepositoryFactory: Partial<PostgresRepositoryFactory>;
+    let mockUserRepository: UserRepository;
+    let mockAudioRepository: AudioRepository;
 
     beforeEach(async () => {
+        mockUserRepository = {} as UserRepository;
+        mockAudioRepository = {} as AudioRepository;
+
+        mockPostgresRepositoryFactory = {
+            getUserRepository: jest.fn().mockReturnValue(mockUserRepository),
+            getAudioRepository: jest.fn().mockReturnValue(mockAudioRepository),
+        };
+
+        mockConfigService = {
+            get: jest.fn(),
+        };
+
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 DatabaseFactory,
                 {
                     provide: ConfigService,
-                    useValue: {
-                        get: jest.fn(),
-                    },
+                    useValue: mockConfigService,
                 },
                 {
                     provide: PostgresRepositoryFactory,
-                    useValue: {
-                        getRepo: jest.fn(),
-                    },
+                    useValue: mockPostgresRepositoryFactory,
                 },
             ],
         }).compile();
 
         databaseFactory = module.get<DatabaseFactory>(DatabaseFactory);
-        configService = module.get<ConfigService>(ConfigService);
-        postgresRepositoryFactory = module.get<PostgresRepositoryFactory>(PostgresRepositoryFactory);
 
         jest.spyOn(Logger.prototype, 'debug').mockImplementation(() => undefined);
         jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
     });
 
     afterEach(() => {
-        jest.resetAllMocks();
+        jest.clearAllMocks();
     });
 
-    describe('getRepository', () => {
-        it('should return repository from provider factory', () => {
-            const mockRepository = { id: 'mock-repo' } as unknown as UserRepository;
-            jest.spyOn(postgresRepositoryFactory, 'getRepo').mockReturnValue(mockRepository);
-            jest.spyOn(configService, 'get').mockReturnValue(DatabaseHosts.POSTGRES);
+    describe('getUserRepository', () => {
+        it('should return user repository from configured provider', () => {
+            (mockConfigService.get as jest.Mock).mockReturnValue(DatabaseProviders.POSTGRES);
 
-            const result = databaseFactory.getRepository(Repository.USER);
+            const repository = databaseFactory.getUserRepository();
 
-            expect(postgresRepositoryFactory.getRepo).toHaveBeenCalledWith(Repository.USER);
-            expect(result).toBe(mockRepository);
+            expect(repository).toBe(mockUserRepository);
+            expect(mockConfigService.get).toHaveBeenCalledWith('database.type');
+            expect(mockPostgresRepositoryFactory.getUserRepository).toHaveBeenCalled();
         });
 
-        it('should cache repository factory after first call', () => {
-            const mockRepository = { id: 'mock-repo' } as unknown as UserRepository;
-            jest.spyOn(postgresRepositoryFactory, 'getRepo').mockReturnValue(mockRepository);
-            jest.spyOn(configService, 'get').mockReturnValue(DatabaseHosts.POSTGRES);
+        it('should cache provider factory after first call', () => {
+            (mockConfigService.get as jest.Mock).mockReturnValue(DatabaseProviders.POSTGRES);
 
-            databaseFactory.getRepository(Repository.USER);
-            databaseFactory.getRepository(Repository.USER);
+            databaseFactory.getUserRepository();
+            databaseFactory.getUserRepository();
 
-            expect(configService.get).toHaveBeenCalledTimes(1);
-            expect(postgresRepositoryFactory.getRepo).toHaveBeenCalledTimes(2);
+            expect(mockConfigService.get).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('getAudioRepository', () => {
+        it('should return audio repository from configured provider', () => {
+            (mockConfigService.get as jest.Mock).mockReturnValue(DatabaseProviders.POSTGRES);
+
+            const repository = databaseFactory.getAudioRepository();
+
+            expect(repository).toBe(mockAudioRepository);
+            expect(mockConfigService.get).toHaveBeenCalledWith('database.type');
+            expect(mockPostgresRepositoryFactory.getAudioRepository).toHaveBeenCalled();
         });
     });
 
     describe('_getProviderFactory', () => {
-        it('should return cached provider factory if available', () => {
-            const mockRepository = { id: 'mock-repo' } as unknown as UserRepository;
-            jest.spyOn(postgresRepositoryFactory, 'getRepo').mockReturnValue(mockRepository);
-            jest.spyOn(configService, 'get').mockReturnValue(DatabaseHosts.POSTGRES);
+        it('should default to postgres when config is undefined', () => {
+            (mockConfigService.get as jest.Mock).mockReturnValue(undefined);
 
-            databaseFactory.getRepository(Repository.USER);
-            databaseFactory.getRepository(Repository.USER);
+            databaseFactory.getUserRepository();
 
-            expect(configService.get).toHaveBeenCalledTimes(1);
+            expect(mockPostgresRepositoryFactory.getUserRepository).toHaveBeenCalled();
+            expect(Logger.prototype.warn).toHaveBeenCalled();
         });
 
-        it('should throw error if database type is invalid', () => {
-            jest.spyOn(configService, 'get').mockReturnValue('INVALID_DB_TYPE');
+        it('should throw error when config is invalid', () => {
+            (mockConfigService.get as jest.Mock).mockReturnValue('invalid-database-type');
 
-            expect(() => databaseFactory.getRepository(Repository.USER)).toThrow(
+            expect(() => databaseFactory.getUserRepository()).toThrowError(
                 "Invalid 'database' environment variable.",
             );
-        });
-
-        it('should use postgres provider if database type is undefined', () => {
-            const mockRepository = { id: 'mock-repo' } as unknown as UserRepository;
-            jest.spyOn(postgresRepositoryFactory, 'getRepo').mockReturnValue(mockRepository);
-            jest.spyOn(configService, 'get').mockReturnValue(undefined);
-
-            const result = databaseFactory.getRepository(Repository.USER);
-
-            expect(Logger.prototype.warn).toHaveBeenCalled();
-            expect(postgresRepositoryFactory.getRepo).toHaveBeenCalledWith(Repository.USER);
-            expect(result).toBe(mockRepository);
-        });
-
-        it('should use specified provider based on config', () => {
-            const mockRepository = { id: 'mock-repo' } as unknown as UserRepository;
-            jest.spyOn(postgresRepositoryFactory, 'getRepo').mockReturnValue(mockRepository);
-            jest.spyOn(configService, 'get').mockReturnValue(DatabaseHosts.POSTGRES);
-
-            const result = databaseFactory.getRepository(Repository.USER);
-
-            expect(postgresRepositoryFactory.getRepo).toHaveBeenCalledWith(Repository.USER);
-            expect(result).toBe(mockRepository);
         });
     });
 
     describe('isValidDbHost', () => {
         it('should return true for valid database host', () => {
-            expect(DatabaseFactory.isValidDbHost(DatabaseHosts.POSTGRES)).toBe(true);
+            expect(DatabaseFactory.isValidDbHost(DatabaseProviders.POSTGRES)).toBe(true);
         });
 
         it('should return false for invalid database host', () => {
-            expect(DatabaseFactory.isValidDbHost('INVALID_HOST')).toBe(false);
+            expect(DatabaseFactory.isValidDbHost('invalid-host')).toBe(false);
         });
     });
 });

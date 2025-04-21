@@ -1,13 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Interactor } from '../interactor.interface';
 import { User } from 'src/domain/entities/user/user.entity';
 import { CreateUserProps } from 'src/domain/entities/user/user.types';
 import { UserRepository } from 'src/domain/ports/repositories';
 import { RepositoryTokens } from 'src/infrastructure/database/database.constants';
+import { Interactor } from '../interactor.interface';
 
 @Injectable()
 export class CreateUserInteractor implements Interactor<CreateUserProps, User> {
-    constructor(@Inject(RepositoryTokens.USER) private readonly _userRepository: UserRepository) {}
+    constructor(
+        @Inject(RepositoryTokens.USER)
+        private readonly _userRepository: UserRepository,
+    ) {}
 
     public async execute(userProps: CreateUserProps): Promise<User> {
         await this._ensureNoUserConflict(userProps);

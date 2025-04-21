@@ -1,118 +1,89 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Kysely } from 'kysely';
 import { Pool } from 'pg';
-import { PostgresUserMapper } from 'src/infrastructure/database/mappers';
 import { PostgresConnection } from 'src/infrastructure/database/postgres/postgres.connection';
 import { PostgresRepositoryFactory } from 'src/infrastructure/database/postgres/postgres.factory';
 import { PostgresUserRepository } from 'src/infrastructure/database/postgres/repositories';
-import { Repository } from 'src/infrastructure/database/types/factory.types';
-
-jest.mock('../../../../../src/infrastructure/database/postgres/repositories/user.repository.ts');
-jest.mock('../../../../../src/infrastructure/database/postgres/mappers/user.mapper.ts');
+import { PostgresAudioRepository } from 'src/infrastructure/database/postgres/repositories/audio.repository';
+import { PostgresDb } from 'src/infrastructure/database/postgres/tables';
 
 describe('PostgresRepositoryFactory', () => {
     let factory: PostgresRepositoryFactory;
-    let connection: PostgresConnection;
-    let mockPool: Pool;
-
-    const MockedPostgresUserRepository = PostgresUserRepository as jest.MockedClass<
-        typeof PostgresUserRepository
-    >;
-    const MockedPostgresUserMapper = PostgresUserMapper as jest.MockedClass<typeof PostgresUserMapper>;
+    let mockDb: Kysely<PostgresDb>;
+    let mockConnection: Partial<PostgresConnection>;
 
     beforeEach(async () => {
-        mockPool = {} as Pool;
+        mockDb = {} as Kysely<PostgresDb>;
 
-        connection = {
-            pool: mockPool,
-        } as PostgresConnection;
+        mockConnection = {
+            get db(): Kysely<PostgresDb> | undefined {
+                return mockDb;
+            },
+        };
 
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 PostgresRepositoryFactory,
                 {
                     provide: PostgresConnection,
-                    useValue: connection,
+                    useValue: mockConnection,
                 },
             ],
         }).compile();
 
         factory = module.get<PostgresRepositoryFactory>(PostgresRepositoryFactory);
-
-        jest.clearAllMocks();
     });
 
-    describe('getRepo', () => {
-        it('should return a PostgresUserRepository when Repository.USER is requested', () => {
-            const mockUserRepo = {} as PostgresUserRepository;
-            MockedPostgresUserRepository.mockImplementation(() => mockUserRepo);
+    describe('getUserRepository', () => {
+        it('should create a new user repository when none is cached', () => {
+            const repository = factory.getUserRepository();
 
-            const result = factory.getRepo(Repository.USER);
+            expect(repository).toBeInstanceOf(PostgresUserRepository);
+        });
 
-            expect(result).toBe(mockUserRepo);
-            expect(MockedPostgresUserRepository).toHaveBeenCalledTimes(1);
-            expect(MockedPostgresUserRepository).toHaveBeenCalledWith(
-                mockPool,
-                expect.any(PostgresUserMapper),
+        it('should return the cached user repository when available', () => {
+            const firstRepo = factory.getUserRepository();
+
+            const secondRepo = factory.getUserRepository();
+
+            expect(secondRepo).toBe(firstRepo);
+        });
+    });
+
+    describe('getAudioRepository', () => {
+        it('should create a new audio repository when none is cached', () => {
+            const repository = factory.getAudioRepository();
+
+            expect(repository).toBeInstanceOf(PostgresAudioRepository);
+        });
+
+        it('should return the cached audio repository when available', () => {
+            const firstRepo = factory.getAudioRepository();
+
+            const secondRepo = factory.getAudioRepository();
+
+            expect(secondRepo).toBe(firstRepo);
+        });
+    });
+
+    describe('error handling', () => {
+        it('should throw an error when pool is undefined', () => {
+            const connectionWithUndefinedPool = {
+                get pool(): Pool | undefined {
+                    return undefined;
+                },
+            };
+
+            const factoryWithUndefinedPool = new PostgresRepositoryFactory(
+                connectionWithUndefinedPool as PostgresConnection,
             );
-            expect(MockedPostgresUserMapper).toHaveBeenCalledTimes(1);
-        });
 
-        it('should return the same repository instance when called multiple times with the same repo type', () => {
-            const mockUserRepo = {} as PostgresUserRepository;
-            MockedPostgresUserRepository.mockImplementation(() => mockUserRepo);
-
-            const result1 = factory.getRepo(Repository.USER);
-            const result2 = factory.getRepo(Repository.USER);
-
-            expect(result1).toBe(mockUserRepo);
-            expect(result2).toBe(mockUserRepo);
-            expect(MockedPostgresUserRepository).toHaveBeenCalledTimes(1);
-        });
-
-        it('should throw an error when the pool is undefined', () => {
-            const connectionWithoutPool = {
-                pool: undefined,
-            } as unknown as PostgresConnection;
-
-            const factoryWithoutPool = new PostgresRepositoryFactory(connectionWithoutPool);
-
-            expect(() => factoryWithoutPool.getRepo(Repository.USER)).toThrow(
+            expect(() => factoryWithUndefinedPool.getUserRepository()).toThrow(
                 'Postgres connection pool is not initialized yet.',
             );
-        });
-
-        it('should throw an error for unimplemented repositories', () => {
-            const nonExistentRepo = 999 as unknown as Repository;
-
-            expect(() => factory.getRepo(nonExistentRepo)).toThrow(
-                `Repository not implemented (${nonExistentRepo})`,
+            expect(() => factoryWithUndefinedPool.getAudioRepository()).toThrow(
+                'Postgres connection pool is not initialized yet.',
             );
-        });
-    });
-
-    describe('Type Safety', () => {
-        it('should handle all repository enum cases', () => {
-            expect(() => factory.getRepo(Repository.USER)).not.toThrow();
-
-            const repoValues = Object.values(Repository).filter(
-                (value): value is Repository =>
-                    typeof value === 'number' &&
-                    Object.values(Repository).includes(value as unknown as Repository),
-            );
-
-            repoValues.forEach((repoValue) => {
-                try {
-                    const repo = factory.getRepo(repoValue);
-
-                    expect(repo).toBeDefined();
-                } catch (error) {
-                    if (repoValue !== Repository.USER) {
-                        expect((error as Error).message).toBe(`Repository not implemented (${repoValue})`);
-                    } else {
-                        fail(`Repository.USER threw an unexpected error: ${error}`);
-                    }
-                }
-            });
         });
     });
 });

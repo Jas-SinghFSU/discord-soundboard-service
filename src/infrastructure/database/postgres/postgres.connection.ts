@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Kysely, PostgresDialect } from 'kysely';
 import { Pool } from 'pg';
-import { PostgresDb } from './models';
+import { PostgresDb } from './tables';
 import { createUsersTable } from './migrations/001/create-users.migration';
 import { createAudioCommandsTable } from './migrations/001/create-audio-commands.migration';
 import { createAudioDataTable } from './migrations/001/create-audio-data.migration';
@@ -10,6 +10,7 @@ import { createAudioDataTable } from './migrations/001/create-audio-data.migrati
 @Injectable()
 export class PostgresConnection {
     private static _pool?: Pool;
+    private static _db?: Kysely<PostgresDb>;
     private readonly _logger: Logger = new Logger(PostgresConnection.name);
 
     constructor(private readonly _configService: ConfigService) {}
@@ -20,6 +21,7 @@ export class PostgresConnection {
         }
 
         await this._setupPool();
+        this._setupDb();
         await this._createTables();
     }
 
@@ -107,6 +109,17 @@ export class PostgresConnection {
     }
 
     /**
+     * Sets up the Kysely database instance
+     */
+    private _setupDb(): void {
+        PostgresConnection._db = new Kysely<PostgresDb>({
+            dialect: new PostgresDialect({
+                pool: this.pool,
+            }),
+        });
+    }
+
+    /**
      * Provides the Postgres connection pool.
      *
      * @returns Postgres Pool instance
@@ -116,5 +129,17 @@ export class PostgresConnection {
             throw new Error('Postgres connection is not initialized.');
         }
         return PostgresConnection._pool;
+    }
+
+    /**
+     * Provides the Kysely database instance.
+     *
+     * @returns Kysely<PostgresDb> instance
+     */
+    public get db(): Kysely<PostgresDb> {
+        if (!PostgresConnection._db) {
+            throw new Error('Postgres database is not initialized.');
+        }
+        return PostgresConnection._db;
     }
 }

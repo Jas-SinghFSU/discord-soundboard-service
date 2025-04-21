@@ -1,30 +1,41 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Kysely } from 'kysely';
+import { Kysely, Transaction as KyselyTransaction } from 'kysely';
 import { AudioRepository } from 'src/domain/ports/repositories/audio-repository.interface';
-import { PostgresDb } from '../models';
-import { PostgresTables } from '../postgres.types';
-import { Pool } from 'pg';
+import { PostgresDb } from '../tables';
+import { PostgresTables, PostgresTransaction } from '../postgres.types';
 import { PostgresMapperTokens } from '../../database.constants';
 import { Mapper } from '../../types/mapper.interface';
-import { createDb } from '../postgres.provider';
 import { Audio } from 'src/domain/entities/audio/audio.entity';
-import { PostgresAudioCommand } from '../models/postgres-audio-command.model';
+import { PostgresAudioCommand } from '../tables/postgres-audio-command.table';
+import { Transaction as DomainTransaction } from 'src/domain/ports/transactions/transaction.interface';
 
 @Injectable()
 export class PostgresAudioRepository implements AudioRepository {
-    private readonly _db: Kysely<PostgresDb>;
-    private readonly _table = PostgresTables.AUDIO_COMMANDS;
+    private readonly _COMMANDS_TABLE = PostgresTables.AUDIO_COMMANDS;
+    private readonly _DATA_TABLE = PostgresTables.AUDIO_DATA;
 
     constructor(
-        pool: Pool,
+        private readonly _db: Kysely<PostgresDb>,
         @Inject(PostgresMapperTokens.AUDIO_COMMAND)
         private readonly _mapper: Mapper<Audio, PostgresAudioCommand>,
-    ) {
-        this._db = createDb(pool);
+    ) {}
+
+    public async create(audio: Audio, data: Buffer, transaction?: DomainTransaction): Promise<Audio> {
+        const executor = this._getExecutor(transaction);
+
+        const audioRecord = this._mapper.toRecord(audio);
+        const dataRecord = { id: audio.id, data };
+
+        await executor.insertInto(this._COMMANDS_TABLE).values(audioRecord).executeTakeFirst();
+        await executor.insertInto(this._DATA_TABLE).values(dataRecord).executeTakeFirst();
+
+        return audio;
     }
 
-    public async findOneById(id: string): Promise<Audio | undefined> {
-        const query = this._db.selectFrom(this._table).where('id', '=', id).selectAll();
+    public async findOneById(id: string, transaction?: DomainTransaction): Promise<Audio | undefined> {
+        const executor = this._getExecutor(transaction);
+
+        const query = executor.selectFrom(this._COMMANDS_TABLE).where('id', '=', id).selectAll();
 
         const audio = await query.executeTakeFirst();
 
@@ -35,5 +46,11 @@ export class PostgresAudioRepository implements AudioRepository {
         const audioEntity = this._mapper.toEntity(audio);
 
         return audioEntity;
+    }
+
+    private _getExecutor(
+        transaction?: DomainTransaction,
+    ): Kysely<PostgresDb> | KyselyTransaction<PostgresDb> {
+        return transaction ? (transaction as PostgresTransaction).transaction : this._db;
     }
 }

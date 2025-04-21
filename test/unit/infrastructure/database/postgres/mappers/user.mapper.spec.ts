@@ -1,10 +1,10 @@
 import { PostgresUserMapper } from 'src/infrastructure/database/mappers';
 import { User } from 'src/domain/entities/user/user.entity';
-import { PostgresUser } from 'src/infrastructure/database/postgres/models';
+import { PostgresUser } from 'src/infrastructure/database/postgres/tables';
 import { CreateUserProps } from 'src/domain/entities/user/user.types';
-import { getValidatedDatabaseRecord } from 'src/infrastructure/database/postgres/database-model.validator';
+import { getValidatedDatabaseRecord } from 'src/infrastructure/database/database-model.validator';
 
-jest.mock('src/infrastructure/database/postgres/database-model.validator');
+jest.mock('../../../../../../src/infrastructure/database/database-model.validator');
 
 describe('PostgresUserMapper', () => {
     let mapper: PostgresUserMapper;
