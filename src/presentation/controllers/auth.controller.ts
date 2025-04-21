@@ -1,8 +1,7 @@
 import { Controller, Get, UseGuards, Req, Res, Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { UrlConfigService } from 'src/application/services/url.service';
-import { AuthGuard } from '@nestjs/passport';
-import { AuthStrategy } from '../auth/auth.types';
+import { DiscordAuthGuard } from '../auth/discord-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -38,7 +37,7 @@ export class AuthController {
      * Triggers the start of the Discord OAuth login process.
      */
     @Get('discord')
-    @UseGuards(AuthGuard(AuthStrategy.DISCORD))
+    @UseGuards(DiscordAuthGuard)
     public discordLogin(): void {
         this._logger.log('Discord login endpoint hit, guard will redirect.');
     }
@@ -50,9 +49,11 @@ export class AuthController {
      * @param res  The response used to redirect the user.
      */
     @Get('discord/callback')
-    @UseGuards(AuthGuard(AuthStrategy.DISCORD))
+    @UseGuards(DiscordAuthGuard)
     public discordCallback(@Req() _req: Request, @Res() res: Response): void {
         this._logger.log('Discord callback endpoint hit.');
+        this._logger.debug(`User in request: ${JSON.stringify(_req.user)}`);
+        this._logger.debug(`Session after auth: ${JSON.stringify(_req.session)}`);
         res.redirect(`${this._uiUrl}/soundboard`);
     }
 
