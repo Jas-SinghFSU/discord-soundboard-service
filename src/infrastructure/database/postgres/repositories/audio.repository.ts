@@ -4,10 +4,10 @@ import { AudioRepository } from 'src/domain/ports/repositories/audio-repository.
 import { PostgresDb } from '../tables';
 import { PostgresTables, PostgresTransaction } from '../postgres.types';
 import { PostgresMapperTokens } from '../../database.constants';
-import { Mapper } from '../../types/mapper.interface';
 import { Audio } from 'src/domain/entities/audio/audio.entity';
-import { PostgresAudioCommand } from '../tables/postgres-audio-command.table';
 import { Transaction as DomainTransaction } from 'src/domain/ports/transactions/transaction.interface';
+import { AudioFileData } from 'src/domain/entities/audio/audio.types';
+import { PostgresAudioCommandMapper } from '../../mappers/postgres/audio.mapper';
 
 @Injectable()
 export class PostgresAudioRepository implements AudioRepository {
@@ -17,7 +17,7 @@ export class PostgresAudioRepository implements AudioRepository {
     constructor(
         private readonly _db: Kysely<PostgresDb>,
         @Inject(PostgresMapperTokens.AUDIO_COMMAND)
-        private readonly _mapper: Mapper<Audio, PostgresAudioCommand>,
+        private readonly _mapper: PostgresAudioCommandMapper,
     ) {}
 
     public async create(audio: Audio, data: Buffer, transaction?: DomainTransaction): Promise<Audio> {
@@ -36,6 +36,44 @@ export class PostgresAudioRepository implements AudioRepository {
         const executor = this._getExecutor(transaction);
 
         const query = executor.selectFrom(this._COMMANDS_TABLE).where('id', '=', id).selectAll();
+
+        const audio = await query.executeTakeFirst();
+
+        if (audio === undefined) {
+            return;
+        }
+
+        const audioEntity = this._mapper.toEntity(audio);
+
+        return audioEntity;
+    }
+
+    public async findDataById(
+        id: string,
+        transaction?: DomainTransaction,
+    ): Promise<AudioFileData | undefined> {
+        const executor = this._getExecutor(transaction);
+
+        const query = executor.selectFrom(this._DATA_TABLE).where('id', '=', id).selectAll();
+
+        const audio = await query.executeTakeFirst();
+
+        if (audio === undefined) {
+            return;
+        }
+
+        const audioFileData = this._mapper.toAudioFileData(audio);
+
+        return audioFileData;
+    }
+
+    public async findOneByName(
+        audioName: string,
+        transaction?: DomainTransaction,
+    ): Promise<Audio | undefined> {
+        const executor = this._getExecutor(transaction);
+
+        const query = executor.selectFrom(this._COMMANDS_TABLE).where('name', '=', audioName).selectAll();
 
         const audio = await query.executeTakeFirst();
 

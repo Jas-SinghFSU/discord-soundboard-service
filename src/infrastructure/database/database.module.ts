@@ -20,7 +20,7 @@ const TRANSACTION_MANAGER_PROVIDER: Provider = {
                 throw new Error(`Unsupported database type "${dbType}" – no TransactionManager registered.`);
         }
     },
-    inject: [ConfigService],
+    inject: [ConfigService, PostgresConnection],
 };
 
 @Module({

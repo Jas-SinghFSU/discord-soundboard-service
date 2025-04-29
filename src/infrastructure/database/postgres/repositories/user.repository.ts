@@ -2,20 +2,21 @@ import { User } from 'src/domain/entities/user/user.entity';
 import { UserRepository } from 'src/domain/ports/repositories';
 import { Transaction as DomainTransaction } from 'src/domain/ports/transactions/transaction.interface';
 import { PostgresTables } from '../postgres.types';
-import { Mapper } from '../../types/mapper.interface';
-import { PostgresDb, PostgresUser } from '../tables';
+import { PostgresDb } from '../tables';
 import { Inject } from '@nestjs/common';
 import { PostgresMapperTokens } from '../../database.constants';
 import { Kysely, Transaction as KyselyTransaction } from 'kysely';
 import { PostgresTransaction } from '../postgres.types';
+import { PostgresUserMapper } from '../../mappers';
 
 export class PostgresUserRepository implements UserRepository {
     private readonly _table = PostgresTables.USERS;
 
     constructor(
         private readonly _db: Kysely<PostgresDb>,
+
         @Inject(PostgresMapperTokens.USER)
-        private readonly _mapper: Mapper<User, PostgresUser>,
+        private readonly _mapper: PostgresUserMapper,
     ) {}
 
     public async create(user: User, transaction?: DomainTransaction): Promise<User> {

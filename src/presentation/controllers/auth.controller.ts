@@ -1,7 +1,7 @@
 import { Controller, Get, UseGuards, Req, Res, Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { UrlConfigService } from 'src/application/services/url.service';
-import { DiscordAuthGuard } from '../auth/discord-auth.guard';
+import { DiscordAuthGuard } from '../auth/guards/discord-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -21,16 +21,7 @@ export class AuthController {
      */
     @Get('status')
     public checkAuthStatus(@Req() req: Request): Record<string, unknown> {
-        this._logger.debug(`Session ID: ${req.sessionID}`);
-        this._logger.debug(`Session: ${JSON.stringify(req.session)}`);
-        this._logger.debug(`Is Authenticated: ${req.isAuthenticated()}`);
-        if (req.isAuthenticated()) {
-            this._logger.debug('Auth status check: User is authenticated.');
-            return { loggedIn: true, user: req.user };
-        } else {
-            this._logger.debug('Auth status check: User is not authenticated.');
-            return { loggedIn: false };
-        }
+        return { authenticated: req.user !== undefined, user: req.user };
     }
 
     /**
@@ -51,9 +42,6 @@ export class AuthController {
     @Get('discord/callback')
     @UseGuards(DiscordAuthGuard)
     public discordCallback(@Req() _req: Request, @Res() res: Response): void {
-        this._logger.log('Discord callback endpoint hit.');
-        this._logger.debug(`User in request: ${JSON.stringify(_req.user)}`);
-        this._logger.debug(`Session after auth: ${JSON.stringify(_req.session)}`);
         res.redirect(`${this._uiUrl}/soundboard`);
     }
 

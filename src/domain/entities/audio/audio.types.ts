@@ -23,3 +23,8 @@ export interface AudioData {
     createdAt: Date;
     updatedAt: Date;
 }
+
+export interface AudioFileData {
+    id: string;
+    data: Buffer;
+}

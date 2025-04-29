@@ -9,9 +9,11 @@ services:
             POSTGRES_USER: soundboardTest
             POSTGRES_PASSWORD: password
             POSTGRES_DB: soundboard
-
-    adminer:
-        image: adminer
-        restart: no
-        ports:
-            - 8080:8080
+        hostname: postgres-soundboard
+        networks:
+            postgres-network:
+                aliases:
+                    - postgres-soundboard
+networks:
+    postgres-network:
+        external: true

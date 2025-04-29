@@ -2,7 +2,8 @@ import { Audio } from 'src/domain/entities/audio/audio.entity';
 import { PostgresAudioCommand } from '../../postgres/tables/postgres-audio-command.table';
 import { getValidatedDatabaseRecord } from '../../database-model.validator';
 import { Mapper } from '../../types/mapper.interface';
-import { AudioData } from 'src/domain/entities/audio/audio.types';
+import { AudioData, AudioFileData } from 'src/domain/entities/audio/audio.types';
+import { PostgresAudioData } from '../../postgres/tables';
 
 export class PostgresAudioCommandMapper implements Mapper<Audio, PostgresAudioCommand> {
     public async toEntity(document: Record<string, unknown>): Promise<Audio> {
@@ -17,12 +18,21 @@ export class PostgresAudioCommandMapper implements Mapper<Audio, PostgresAudioCo
             name: audioEntity.name,
             format: audioEntity.format,
             size: audioEntity.size,
-            createdBy: audioEntity.createdBy,
-            createdAt: audioEntity.createdAt,
-            updatedAt: audioEntity.updatedAt,
+            created_by: audioEntity.createdBy,
+            created_at: audioEntity.createdAt,
+            updated_at: audioEntity.updatedAt,
         };
 
         return audioRecord;
+    }
+
+    public toAudioFileData(audioData: PostgresAudioData): AudioFileData {
+        const audioFileData: AudioFileData = {
+            id: audioData.id,
+            data: audioData.data,
+        };
+
+        return audioFileData;
     }
 
     private _toAudioAttributes(audioRecord: PostgresAudioCommand): AudioData {
@@ -31,9 +41,9 @@ export class PostgresAudioCommandMapper implements Mapper<Audio, PostgresAudioCo
             name: audioRecord.name,
             format: audioRecord.format,
             size: audioRecord.size,
-            createdBy: audioRecord.createdBy,
-            createdAt: audioRecord.createdAt,
-            updatedAt: audioRecord.updatedAt,
+            createdBy: audioRecord.created_by,
+            createdAt: audioRecord.created_at,
+            updatedAt: audioRecord.updated_at,
         };
 
         return audioAttributes;

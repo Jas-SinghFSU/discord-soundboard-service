@@ -18,13 +18,13 @@ export class AudioConrollerMapper {
         };
     }
 
-    public toCreateCommand(dto: CreateAudioRequestDTO): CreateAudioCommand {
+    public toCreateCommand(metadataDto: CreateAudioRequestDTO, file: Buffer): CreateAudioCommand {
         return {
             audioProps: {
-                name: dto.name,
-                format: dto.format,
+                name: metadataDto.name,
+                format: metadataDto.format,
             },
-            audioFile: dto.file,
+            audioFile: file,
         };
     }
 }

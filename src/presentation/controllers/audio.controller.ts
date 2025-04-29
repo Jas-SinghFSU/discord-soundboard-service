@@ -1,11 +1,11 @@
-import { Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { AuthStrategy } from '../auth/auth.types';
+import { Body, Controller, Get, Param, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { GetAudioRequestDTO } from '../dto/audio/get-audio-command.dto';
 import { AudioResponseDto } from '../dto/audio/audio-response.dto';
 import { AudioService } from 'src/application/services/audio.service';
 import { AudioConrollerMapper } from '../mappers/audio.mapper';
 import { CreateAudioRequestDTO } from '../dto/audio/create-audio-command.dto';
+import { AuthenticatedGuard } from '../auth/guards/authentication.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('audio')
 export class AudioController {
@@ -15,7 +15,7 @@ export class AudioController {
     ) {}
 
     @Get(':id')
-    @UseGuards(AuthGuard(AuthStrategy.DISCORD))
+    @UseGuards(AuthenticatedGuard)
     public async getAudioCommand(@Param() getAudioRequestDto: GetAudioRequestDTO): Promise<AudioResponseDto> {
         const { id } = getAudioRequestDto;
 
@@ -25,11 +25,16 @@ export class AudioController {
     }
 
     @Post()
-    @UseGuards(AuthGuard(AuthStrategy.DISCORD))
+    @UseGuards(AuthenticatedGuard)
+    @UseInterceptors(FileInterceptor('file'))
     public async createAudioCommand(
-        @Param() createAudioCommandRequestDto: CreateAudioRequestDTO,
+        @Body() createAudioCommandRequestDto: CreateAudioRequestDTO,
+        @UploadedFile() file: Express.Multer.File,
     ): Promise<AudioResponseDto> {
-        const createAudioCommand = this._audioMapper.toCreateCommand(createAudioCommandRequestDto);
+        const createAudioCommand = this._audioMapper.toCreateCommand(
+            createAudioCommandRequestDto,
+            file.buffer,
+        );
 
         const audio = await this._audioService.createAudio(createAudioCommand);
 

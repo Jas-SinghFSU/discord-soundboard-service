@@ -41,7 +41,7 @@ export class AudioService {
 
             return createdAudioCommand;
         } catch (error) {
-            const internalErrorMsg = error instanceof Error ? error.message : String(error);
+            const internalErrorMsg = error instanceof Error ? error.stack : String(error);
 
             this._logger.error(
                 `An internal error occurred while creating audio command '${command.audioProps.name}': ${internalErrorMsg}`,

@@ -5,7 +5,7 @@ export class PostgresAudioCommand {
     public name: string;
     public format: AudioFileFormat;
     public size: number;
-    public createdBy: string;
-    public createdAt: Date;
-    public updatedAt: Date;
+    public created_by: string;
+    public created_at: Date;
+    public updated_at: Date;
 }
