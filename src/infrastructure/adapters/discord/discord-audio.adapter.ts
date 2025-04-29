@@ -196,12 +196,10 @@ export class DiscordAudioAdapter implements OnModuleInit {
     }
 
     /**
-     * Stops any currently playing audio
+     * Stops any currently playing audio and destroys the connection if it exists
      */
     private _stopCurrentPlayback(): void {
-        if (this._currentPlayer) {
-            this._currentPlayer.stop();
-        }
+        this._currentPlayer?.stop();
 
         if (this._currentConnection?.state.status !== VoiceConnectionStatus.Destroyed) {
             this._currentConnection?.destroy();
