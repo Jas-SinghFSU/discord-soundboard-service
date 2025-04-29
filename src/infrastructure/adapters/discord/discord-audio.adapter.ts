@@ -14,6 +14,7 @@ import {
     VoiceConnection,
     AudioPlayer,
     AudioResource,
+    VoiceConnectionStatus,
 } from '@discordjs/voice';
 import { EVENT_BUS } from 'src/infrastructure/event/event.constants';
 import { RepositoryTokens } from 'src/infrastructure/database/database.constants';
@@ -118,9 +119,12 @@ export class DiscordAudioAdapter implements OnModuleInit {
      */
     private async _handleAudioPlayRequest(payload: AudioPlayRequestedPayload): Promise<void> {
         try {
-            this._logger.log(`Playing audio ${payload.audioId} in channel ${payload.channelId}`);
+            this._logger.debug(`Playing audio ${payload.audioId} in channel ${payload.channelId}`);
 
+            const userVolume = payload?.volume ?? 100;
+            const normalizedVolume = userVolume / 100;
             const audioData = await this._fetchAudioData(payload.audioId);
+
             if (!audioData) return;
 
             const channel = this._getVoiceChannel(payload.channelId);
@@ -128,7 +132,7 @@ export class DiscordAudioAdapter implements OnModuleInit {
 
             this._stopCurrentPlayback();
 
-            await this._playAudioInChannel(channel, audioData);
+            await this._playAudioInChannel(channel, audioData, normalizedVolume);
             await this._publishPlaybackCompletedEvent(payload);
         } catch (error) {
             this._logger.error(
@@ -181,6 +185,7 @@ export class DiscordAudioAdapter implements OnModuleInit {
     private async _publishPlaybackCompletedEvent(originalPayload: AudioPlayRequestedPayload): Promise<void> {
         const finishedPayload: AudioPlayFinishedPayload = {
             audioId: originalPayload.audioId,
+            volume: originalPayload.volume,
             channelId: originalPayload.channelId,
             userId: originalPayload.userId,
             duration: 0,
@@ -198,8 +203,8 @@ export class DiscordAudioAdapter implements OnModuleInit {
             this._currentPlayer.stop();
         }
 
-        if (this._currentConnection) {
-            this._currentConnection.destroy();
+        if (this._currentConnection?.state.status !== VoiceConnectionStatus.Destroyed) {
+            this._currentConnection?.destroy();
         }
 
         this._currentPlayer = null;
@@ -215,14 +220,27 @@ export class DiscordAudioAdapter implements OnModuleInit {
      * @param channel - Discord voice channel to play audio in
      * @param audioBuffer - The audio data to play
      */
-    private async _playAudioInChannel(channel: VoiceChannel, audioBuffer: Buffer): Promise<void> {
+    private async _playAudioInChannel(
+        channel: VoiceChannel,
+        audioBuffer: Buffer,
+        volume: number,
+    ): Promise<void> {
         try {
+            this._logger.debug(`[_playAudioInChannel] Connecting to voice channel ${channel}`);
+
             this._currentConnection = this._connectToVoiceChannel(channel);
             this._currentPlayer = createAudioPlayer();
 
             const resource = this._createAudioResource(audioBuffer);
 
+            resource.volume?.setVolume(volume);
+
+            this._logger.debug('[_playAudioInChannel] Created audio resource...');
+
             this._currentConnection.subscribe(this._currentPlayer);
+
+            this._logger.debug('[_playAudioInChannel] Playing sound...');
+
             this._currentPlayer.play(resource);
 
             return this._createPlaybackCompletionPromise(this._currentConnection, this._currentPlayer);
@@ -261,7 +279,9 @@ export class DiscordAudioAdapter implements OnModuleInit {
         audioStream.push(audioBuffer);
         audioStream.push(null);
 
-        return createAudioResource(audioStream);
+        return createAudioResource(audioStream, {
+            inlineVolume: true,
+        });
     }
 
     /**

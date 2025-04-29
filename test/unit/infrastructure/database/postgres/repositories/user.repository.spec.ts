@@ -2,12 +2,12 @@ import { User } from 'src/domain/entities/user/user.entity';
 import { PostgresDb, PostgresUser } from 'src/infrastructure/database/postgres/tables';
 import { PostgresTables } from 'src/infrastructure/database/postgres/postgres.types';
 import { PostgresUserRepository } from 'src/infrastructure/database/postgres/repositories';
-import { Mapper } from 'src/infrastructure/database/types/mapper.interface';
 import { Kysely } from 'kysely';
+import { PostgresUserMapper } from 'src/infrastructure/database/mappers';
 
 describe('PostgresUserRepository', () => {
     let repository: PostgresUserRepository;
-    let mockMapper: Mapper<User, PostgresUser>;
+    let mockMapper: PostgresUserMapper;
     let mockDb: Kysely<PostgresDb>;
 
     const mockUser = {
@@ -54,7 +54,7 @@ describe('PostgresUserRepository', () => {
         mockMapper = {
             toRecord: jest.fn().mockReturnValue(mockPostgresUser),
             toEntity: jest.fn().mockReturnValue(mockUser),
-        };
+        } as unknown as PostgresUserMapper;
 
         mockExecuteTakeFirst.mockResolvedValue(mockPostgresUser);
 

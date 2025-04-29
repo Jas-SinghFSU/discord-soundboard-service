@@ -42,11 +42,12 @@ export class AudioService {
         }
     }
 
-    public async playAudio(id: string, channelId: string, userId: string): Promise<void> {
+    public async playAudio(id: string, channelId: string, userId: string, volume: number): Promise<void> {
         await this._getAudio(id);
 
         const payload: AudioPlayRequestedPayload = {
             audioId: id,
+            volume,
             channelId,
             userId,
             timestamp: new Date(),

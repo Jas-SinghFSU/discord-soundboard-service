@@ -6,6 +6,8 @@ import { AudioConrollerMapper } from '../mappers/audio.mapper';
 import { CreateAudioRequestDTO } from '../dto/audio/create-audio-command.dto';
 import { AuthenticatedGuard } from '../auth/guards/authentication.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { AuthUser } from '../decorators/user.decorator';
+import { User } from 'src/domain/entities/user/user.entity';
 
 @Controller('audio')
 export class AudioController {
@@ -39,5 +41,17 @@ export class AudioController {
         const audio = await this._audioService.createAudio(createAudioCommand);
 
         return this._audioMapper.toDto(audio);
+    }
+
+    @Post(':id/play')
+    @UseGuards(AuthenticatedGuard)
+    public async playAudio(
+        @Param('id') audioId: string,
+        @Body() playRequest: { channelId: string },
+        @AuthUser() user: User,
+    ): Promise<void> {
+        const { id: userId } = user;
+        const { volume } = user.audioPreferences;
+        await this._audioService.playAudio(audioId, playRequest.channelId, userId, volume);
     }
 }
