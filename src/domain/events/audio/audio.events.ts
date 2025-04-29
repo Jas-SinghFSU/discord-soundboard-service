@@ -2,7 +2,7 @@ import { EventPayload } from 'src/domain/ports/events/events.types';
 
 export interface AudioPlayRequestedPayload extends EventPayload {
     audioId: string;
-    volume: number;
+    volume?: number;
     channelId: string;
     userId: string;
     timestamp: Date;

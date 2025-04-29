@@ -185,7 +185,7 @@ export class DiscordAudioAdapter implements OnModuleInit {
     private async _publishPlaybackCompletedEvent(originalPayload: AudioPlayRequestedPayload): Promise<void> {
         const finishedPayload: AudioPlayFinishedPayload = {
             audioId: originalPayload.audioId,
-            volume: originalPayload.volume,
+            volume: originalPayload.volume ?? 100,
             channelId: originalPayload.channelId,
             userId: originalPayload.userId,
             duration: 0,
