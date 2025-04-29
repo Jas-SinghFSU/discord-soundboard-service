@@ -6,6 +6,8 @@ import { ServicesModule } from './application/services/services.module';
 import { AuthModule } from './presentation/auth/auth.module';
 import { ControllersModule } from './presentation/controllers/controller.module';
 import appConfig from './config/app.config';
+import { EventsModule } from './infrastructure/event/event.module';
+import { DiscordModule } from './infrastructure/adapters/discord/discord.module';
 
 @Module({
     imports: [
@@ -14,6 +16,8 @@ import appConfig from './config/app.config';
         DatabaseModule,
         InteractorsModule,
         ServicesModule,
+        EventsModule,
+        DiscordModule,
         ControllersModule,
     ],
     controllers: [],
