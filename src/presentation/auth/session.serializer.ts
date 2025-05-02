@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PassportSerializer } from '@nestjs/passport';
 import { User } from 'src/domain/entities/user/user.entity';
-import { Done } from './auth.types';
+import { DoneWithRoles } from './auth.types';
 import { GetUserInteractor } from 'src/application/interactors/user';
+import { UserRolesProvider } from 'src/domain/ports/providers/roles/user-roles.provider';
 
 /**
  * Manages how user session data is handled for Passport.
@@ -18,7 +19,10 @@ import { GetUserInteractor } from 'src/application/interactors/user';
 export class SessionSerializer extends PassportSerializer {
     private readonly _logger: Logger = new Logger(SessionSerializer.name);
 
-    constructor(private readonly _getUserInteractor: GetUserInteractor) {
+    constructor(
+        private readonly _getUserInteractor: GetUserInteractor,
+        private readonly _userRolesProvider: UserRolesProvider,
+    ) {
         super();
     }
 
@@ -45,7 +49,7 @@ export class SessionSerializer extends PassportSerializer {
      * @param userId  The user ID previously stored in the session.
      * @param done    Callback to provide the fetched user object or handle an error.
      */
-    public async deserializeUser(userId: string, done: Done): Promise<void> {
+    public async deserializeUser(userId: string, done: DoneWithRoles): Promise<void> {
         this._logger.debug(`Deserializing user ID: ${userId}`);
 
         try {
@@ -56,7 +60,14 @@ export class SessionSerializer extends PassportSerializer {
                 throw new Error(`Failed to deserialize user with with id '${userId}'. User not found.`);
             }
 
-            done(null, user);
+            const userRoles = await this._userRolesProvider.getUserRoles(userId);
+
+            const userObject = {
+                user,
+                roles: userRoles.roles,
+            };
+
+            done(null, userObject);
         } catch (error: unknown) {
             this._logger.error(
                 `Deserialize Error for ID ${userId}: ${error instanceof Error ? error.message : String(error)}`,

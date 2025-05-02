@@ -19,6 +19,8 @@
         "@typescript-eslint/no-explicit-any": "error",
         "@typescript-eslint/no-non-null-assertion": "error",
         "@typescript-eslint/strict-boolean-expressions": "error",
+        "@typescript-eslint/prefer-enum-initializers": "error",
+        "@typescript-eslint/no-mixed-enums": "error",
         "@typescript-eslint/no-unused-vars": "error",
         "@typescript-eslint/explicit-member-accessibility": [
             "error",

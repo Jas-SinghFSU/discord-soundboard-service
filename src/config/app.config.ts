@@ -10,7 +10,9 @@ export default (): Record<string, unknown> => ({
         clientID: process.env.DISCORD_CLIENT_ID,
         clientSecret: process.env.DISCORD_CLIENT_SECRET,
         callbackURL: process.env.DISCORD_CALLBACK_URL,
-        scope: ['identify'],
+        botToken: process.env.DISCORD_BOT_TOKEN,
+        serverId: process.env.SERVER_ID,
+        allowedRoles: process.env.ALLOWED_ROLES,
     },
 
     session: {

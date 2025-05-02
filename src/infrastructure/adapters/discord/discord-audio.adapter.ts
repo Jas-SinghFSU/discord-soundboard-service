@@ -73,7 +73,7 @@ export class DiscordAudioAdapter implements OnModuleInit {
      * @returns A promise resolving to true if successful, false otherwise
      */
     private async _initializeDiscordClient(): Promise<boolean> {
-        const token = this._configService.get<string>('DISCORD_BOT_TOKEN');
+        const token = this._configService.get<string>('discord.botToken');
 
         if (token === undefined) {
             this._logger.error('DISCORD_BOT_TOKEN is not defined in environment variables');

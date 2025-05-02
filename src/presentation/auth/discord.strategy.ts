@@ -5,7 +5,7 @@ import { Strategy, Profile } from 'passport-discord';
 import { AuthService } from '../../application/services/auth.service';
 import { CreateUserProps } from 'src/domain/entities/user/user.types';
 import { UrlConfigService } from 'src/application/services/url.service';
-import { AuthStrategy, Done } from './auth.types';
+import { AuthStrategy, DiscordOAuthScope, Done } from './auth.types';
 
 /**
  * Implements Discord OAuth 2.0 authentication as a Passport strategy.
@@ -23,24 +23,16 @@ export class DiscordStrategy extends PassportStrategy(Strategy, AuthStrategy.DIS
 
     constructor(
         private readonly _authService: AuthService,
-        private readonly _configService: ConfigService,
+        _configService: ConfigService,
         _urlService: UrlConfigService,
     ) {
         super({
             clientID: _configService.get<string>('discord.clientID') ?? '',
             clientSecret: _configService.get<string>('discord.clientSecret') ?? '',
             callbackURL: `${_urlService.apiUrl}/auth/discord/callback`,
-            scope: ['identify'],
+            scope: [DiscordOAuthScope.IDENTIFY],
             passReqToCallback: false,
         });
-
-        if (
-            this._configService.get<string>('discord.clientID') === undefined ||
-            this._configService.get<string>('discord.clientSecret') === undefined
-        ) {
-            this._logger.error('Discord clientID or clientSecret not configured!');
-            throw new Error('Discord OAuth credentials missing.');
-        }
     }
 
     /**
@@ -76,9 +68,6 @@ export class DiscordStrategy extends PassportStrategy(Strategy, AuthStrategy.DIS
             this._logger.debug(`Constructed userProps: ${JSON.stringify(userProps)}`);
 
             const user = await this._authService.validateOrCreateUser(userProps);
-
-            this._logger.debug(`Validation successful for user: ${user.id}`);
-            this._logger.debug(`User object: ${JSON.stringify(user)}`);
 
             return done(null, user);
         } catch (error: unknown) {
